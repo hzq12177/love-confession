@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>LOVE · E.dan · Vertical Confession</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+    }
+    /* 竖屏 9:16 容器，居中显示，用来录屏 */
+    #app {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      height: 100vh;
+      aspect-ratio: 9 / 16;   /* 强制 9:16 竖屏画布 */
+      max-width: 100vw;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(255,105,180,0.4);
+      background: radial-gradient(circle at top, #ff6699 0%, #18011f 45%, #05000a 100%);
+    }
+    canvas {
+      display: block;
+    }
+    #hint {
+      position: absolute;
+      bottom: 14px;
+      left: 12px;
+      right: 12px;
+      z-index: 10;
+      padding: 8px 12px;
+      border-radius: 14px;
+      backdrop-filter: blur(14px);
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 11px;
+      color: #fff;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    #stage-label {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: #ffd6f5;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,192,203,0.4);
+      backdrop-filter: blur(10px);
+    }
+    #fs-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 11;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 11px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    #fs-btn:hover {
+      background: rgba(255,105,180,0.8);
+      border-color: rgba(255,200,230,0.9);
+    }
+    #final-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(0,0,0,0.45);
+    }
+    #final-overlay .box {
+      background: rgba(15, 0, 30, 0.95);
+      border-radius: 24px;
+      padding: 24px 24px 20px;
+      text-align: center;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,192,203,0.5);
+      min-width: 220px;
+      max-width: 280px;
+    }
+    #final-overlay .question {
+      font-size: 18px;
+      color: #ffe6ff;
+      margin-bottom: 18px;
+    }
+    #final-overlay button {
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff7ab5, #ff3f8e);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(255,63,142,0.6);
+    }
+    #final-overlay button:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(255,63,142,0.5);
+    }
+    #hint {
+  display: none !important;
+}
+
+
+  </style>
+</head>
+<body>
+  <!-- 竖屏 9:16 画布容器 -->
+  <div id="app">
+    <button id="fs-btn" title="切换全屏（快捷键 F）">⛶ 全屏</button>
+    <div id="stage-label">Screen 1 / 6 · 星空</div>
+    <div id="hint"></div>
+
+    <div id="final-overlay">
+      <div class="box">
+        <div class="question">做我女朋友好吗？</div>
+        <button id="yes-btn">好 ❤️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- importmap -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js",
+      "three/examples/jsm/loaders/FontLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/FontLoader.js",
+      "three/examples/jsm/geometries/TextGeometry.js": "https://unpkg.com/three@0.160.0/examples/jsm/geometries/TextGeometry.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+    import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+
+    const CONFIG = {
+      mainWord: 'LOVE',
+      nameWord: 'E.dan',
+      subWord: 'You are my favorite feeling',
+      timeline: [
+        '2025.07.04 遇见你',
+        'Then 爱上你',
+        'Then 想和你走下去'
+      ],
+      finalQuestion: '做我女朋友好吗？'
+    };
+
+    const THEMES = [
+      {
+        name: 'Sweet Pink',
+        bg: 0x05000a,
+        heartColor: 0xff2b6c,
+        heartEmissive: 0xff1f5a,
+        starColor: 0xff88dd
+      },
+      {
+        name: 'Ocean Blue',
+        bg: 0x000814,
+        heartColor: 0x4cc9f0,
+        heartEmissive: 0x4895ef,
+        starColor: 0x90e0ef
+      },
+      {
+        name: 'Galaxy Purple',
+        bg: 0x120018,
+        heartColor: 0xb5179e,
+        heartEmissive: 0xf72585,
+        starColor: 0xf783ff
+      }
+    ];
+    let themeIndex = 0;
+
+    const app = document.getElementById('app');
+    const hintEl = document.getElementById('hint');
+    const stageLabel = document.getElementById('stage-label');
+    const finalOverlay = document.getElementById('final-overlay');
+    const yesBtn = document.getElementById('yes-btn');
+    const finalQuestionEl = finalOverlay.querySelector('.question');
+    const fsBtn = document.getElementById('fs-btn');
+
+    hintEl.textContent =
+`操作说明（竖屏录抖音专用）：
+Enter / → ：下一屏
+← ：上一屏
+第 3 屏：按 X 触发 LOVE & E.dan 粒子爆炸 💥
+第 5 屏：按 Space 放烟花 🎆
+按 C 切换主题色 🎨
+按 F 或左上角按钮全屏 ⛶
+鼠标拖拽旋转视角`;
+
+    yesBtn.addEventListener('click', () => {
+      finalQuestionEl.textContent = '那以后我就负责让你开心 💖';
+    });
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+    }
+    fsBtn.addEventListener('click', toggleFullscreen);
+
+    // ========= 场景 =========
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x05000a, 30, 140);
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      app.clientWidth / app.clientHeight,
+      0.1,
+      300
+    );
+    camera.position.set(0, 10, 55);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(app.clientWidth, app.clientHeight);
+    app.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.4;
+    controls.minDistance = 20;
+    controls.maxDistance = 110;
+
+    // ========= 灯光 =========
+    const ambient = new THREE.AmbientLight(0xff88cc, 0.6);
+    scene.add(ambient);
+
+    const spot = new THREE.SpotLight(0xffffff, 1.2, 200, Math.PI / 5, 0.4, 1.2);
+    spot.position.set(30, 60, 40);
+    scene.add(spot);
+
+    const backLight = new THREE.PointLight(0x9911ff, 1.0, 220);
+    backLight.position.set(-40, -5, -30);
+    scene.add(backLight);
+
+    // ========= 星空 =========
+    const starCount = 2600;
+    const starGeometry = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      starPositions[i3]     = (Math.random() - 0.5) * 120;
+      starPositions[i3 + 1] = (Math.random() - 0.5) * 200;
+      starPositions[i3 + 2] = (Math.random() - 0.5) * 120;
+    }
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+    const starMaterial = new THREE.PointsMaterial({
+      size: 0.8,
+      color: 0xff88dd,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // ========= 心形 =========
+    let heartMat;
+    function createHeartMesh() {
+      const shape = new THREE.Shape();
+      shape.moveTo(0, 0);
+      shape.bezierCurveTo(0, 3, -3, 3, -3, 0);
+      shape.bezierCurveTo(-3, -3, 3, -3, 3, 0);
+      shape.bezierCurveTo(3, 3, 0, 3, 0, 0);
+
+      const geo = new THREE.ExtrudeGeometry(shape, {
+        depth: 2.5,
+        bevelEnabled: true,
+        bevelSegments: 12,
+        steps: 2,
+        bevelSize: 0.8,
+        bevelThickness: 1.3
+      });
+
+      geo.center();
+      geo.scale(2.4, 2.4, 2.4);
+
+      heartMat = new THREE.MeshPhongMaterial({
+        color: 0xff2b6c,
+        emissive: 0xff1f5a,
+        emissiveIntensity: 0.95,
+        shininess: 120,
+        specular: 0xffffff
+      });
+
+      const mesh = new THREE.Mesh(geo, heartMat);
+      return mesh;
+    }
+
+    const heart = createHeartMesh();
+    scene.add(heart);
+
+    // ========= 文案 & 时间线 =========
+    const textGroup = new THREE.Group();
+    scene.add(textGroup);
+
+    const timelineGroup = new THREE.Group();
+    timelineGroup.position.y = -16;
+    scene.add(timelineGroup);
+
+    let timelineMeshes = [];
+    let finalQuestionMesh = null;
+
+    // ========= 粒子文字（LOVE & E.dan） =========
+    const particleTexts = []; // {points, positions, basePositions, velocities, life, exploding}
+
+    function createParticleText(font, text, size, color, centerY) {
+      const geo = new TextGeometry(text, {
+        font,
+        size,
+        height: 0.4,
+        curveSegments: 12,
+        bevelEnabled: false
+      });
+      geo.center();
+
+      const posAttr = geo.attributes.position;
+      const srcArr = posAttr.array;
+      const basePositions = new Float32Array(srcArr.length);
+      for (let i = 0; i < srcArr.length; i += 3) {
+        basePositions[i]     = srcArr[i];
+        basePositions[i + 1] = srcArr[i + 1] + centerY;
+        basePositions[i + 2] = srcArr[i + 2];
+      }
+
+      const positions = new Float32Array(basePositions.length);
+      const velocities = new Float32Array(basePositions.length);
+
+      for (let i = 0; i < positions.length; i += 3) {
+        const r = 40 * Math.cbrt(Math.random());
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        positions[i]     = r * Math.sin(phi) * Math.cos(theta);
+        positions[i + 1] = r * Math.sin(phi) * Math.sin(theta);
+        positions[i + 2] = r * Math.cos(phi);
+        velocities[i] = velocities[i + 1] = velocities[i + 2] = 0;
+      }
+
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.45,
+        color,
+        transparent: true,
+        opacity: 1.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const points = new THREE.Points(geom, mat);
+      points.visible = false;
+      scene.add(points);
+
+      return {
+        points,
+        positions,
+        basePositions,
+        velocities,
+        life: 0,
+        exploding: false
+      };
+    }
+
+    const fontLoader = new FontLoader();
+    fontLoader.load(
+      'https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json',
+      (font) => {
+        const mainMat = new THREE.MeshPhongMaterial({
+          color: 0xffffff,
+          emissive: 0xff4b9f,
+          emissiveIntensity: 0.7,
+          shininess: 160
+        });
+
+        const subMat = new THREE.MeshPhongMaterial({
+          color: 0xffe8ff,
+          emissive: 0x661144,
+          emissiveIntensity: 0.4
+        });
+
+        function makeTextMesh(text, size, mat, bevel = true) {
+          const geo = new TextGeometry(text, {
+            font,
+            size,
+            height: 0.5,
+            curveSegments: 12,
+            bevelEnabled: bevel,
+            bevelThickness: bevel ? 0.18 : 0,
+            bevelSize: bevel ? 0.14 : 0,
+            bevelSegments: bevel ? 6 : 0
+          });
+          geo.center();
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.castShadow = true;
+          return mesh;
+        }
+
+        // LOVE / E.dan / sub 文本（实体）
+        const mainMesh = makeTextMesh(CONFIG.mainWord, 3.8, mainMat);
+        mainMesh.position.y = 12;
+
+        const nameMesh = makeTextMesh(CONFIG.nameWord, 2.4, mainMat);
+        nameMesh.position.y = 7;
+
+        const subGeo = new TextGeometry(CONFIG.subWord, {
+          font,
+          size: 1.0,
+          height: 0.3,
+          curveSegments: 10,
+          bevelEnabled: false
+        });
+        subGeo.center();
+        const subMesh = new THREE.Mesh(subGeo, subMat);
+        subMesh.position.y = -10;
+
+        textGroup.add(mainMesh);
+        textGroup.add(nameMesh);
+        textGroup.add(subMesh);
+
+        // 时间线
+        CONFIG.timeline.forEach((line, idx) => {
+          const mat = subMat.clone();
+          mat.transparent = true;
+          mat.opacity = 1;
+          const mesh = makeTextMesh(line, 0.9, mat, false);
+          mesh.position.y = idx * -1.8;
+          timelineGroup.add(mesh);
+          timelineMeshes.push(mesh);
+        });
+
+        // 3D 问句（可选）
+        const qMat = mainMat.clone();
+        qMat.color.set(0xfff5f5);
+        qMat.emissive.set(0xff4b9f);
+        const qMesh = makeTextMesh(CONFIG.finalQuestion, 1.8, qMat);
+        qMesh.position.set(0, -2, 0);
+        qMesh.visible = false;
+        finalQuestionMesh = qMesh;
+        scene.add(finalQuestionMesh);
+
+        // 粒子文字 LOVE & E.dan
+        const loveParticles = createParticleText(font, CONFIG.mainWord, 3.3, 0xff88dd, 10);
+        const edanParticles = createParticleText(font, CONFIG.nameWord, 2.3, 0xffc0ff, 6);
+        particleTexts.push(loveParticles, edanParticles);
+      }
+    );
+
+    // ========= 烟花 =========
+    class Firework {
+      constructor(position) {
+        const particleCount = 140;
+        const geo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+          const i3 = i * 3;
+          positions[i3]     = position.x;
+          positions[i3 + 1] = position.y;
+          positions[i3 + 2] = position.z;
+
+          const dir = new THREE.Vector3(
+            (Math.random() - 0.5),
+            (Math.random() - 0.2),
+            (Math.random() - 0.5)
+          ).normalize().multiplyScalar(10 + Math.random() * 8);
+
+          velocities[i3]     = dir.x;
+          velocities[i3 + 1] = dir.y;
+          velocities[i3 + 2] = dir.z;
+        }
+
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+
+        const mat = new THREE.PointsMaterial({
+          size: 0.45,
+          color: 0xffc0ff,
+          transparent: true,
+          opacity: 1.0,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        this.points = new THREE.Points(geo, mat);
+        this.age = 0;
+        this.lifetime = 1.4;
+      }
+
+      update(dt) {
+        this.age += dt;
+        const posAttr = this.points.geometry.getAttribute('position');
+        const velAttr = this.points.geometry.getAttribute('velocity');
+
+        for (let i = 0; i < posAttr.count; i++) {
+          const i3 = i * 3;
+          velAttr.array[i3 + 1] -= 9.8 * dt * 0.6;
+          posAttr.array[i3]     += velAttr.array[i3] * dt;
+          posAttr.array[i3 + 1] += velAttr.array[i3 + 1] * dt;
+          posAttr.array[i3 + 2] += velAttr.array[i3 + 2] * dt;
+        }
+        posAttr.needsUpdate = true;
+
+        const t = this.age / this.lifetime;
+        this.points.material.opacity = Math.max(0, 1 - t);
+      }
+
+      isDead() {
+        return this.age >= this.lifetime;
+      }
+    }
+
+    const fireworks = [];
+    let autoFireworks = false;
+    let fireworkTimer = 0;
+
+    function spawnFirework() {
+      const pos = new THREE.Vector3(
+        (Math.random() - 0.5) * 10,
+        6 + Math.random() * 10,
+        (Math.random() - 0.5) * 10
+      );
+      const f = new Firework(pos);
+      scene.add(f.points);
+      fireworks.push(f);
+    }
+
+    // ========= 主题色 =========
+    function applyTheme() {
+      const t = THEMES[themeIndex];
+      scene.background = new THREE.Color(t.bg);
+      scene.fog.color.set(t.bg);
+      if (heartMat) {
+        heartMat.color.set(t.heartColor);
+        heartMat.emissive.set(t.heartEmissive);
+      }
+      starMaterial.color.set(t.starColor);
+    }
+    applyTheme();
+
+    // ========= 屏幕状态（1~6） =========
+    let screenIndex = 1;
+
+    function updateStageLabel() {
+      const names = ['星空', '爱心', '粒子文字', '我们的故事', '烟花', '最后的答案'];
+      stageLabel.textContent = `Screen ${screenIndex} / 6 · ${names[screenIndex - 1]}`;
+    }
+
+    function updateScreenVisibility() {
+      stars.visible = true;
+      heart.visible = true;
+      textGroup.visible = true;
+      timelineGroup.visible = true;
+      if (finalQuestionMesh) finalQuestionMesh.visible = false;
+      particleTexts.forEach(p => { if (p.points) p.points.visible = false; });
+      autoFireworks = false;
+      finalOverlay.style.display = 'none';
+
+      if (screenIndex === 1) {
+        heart.visible = false;
+        textGroup.visible = false;
+        timelineGroup.visible = false;
+      } else if (screenIndex === 2) {
+        timelineGroup.visible = false;
+      } else if (screenIndex === 3) {
+        textGroup.visible = false;
+        timelineGroup.visible = false;
+        particleTexts.forEach(p => { if (p.points) p.points.visible = true; });
+      } else if (screenIndex === 4) {
+        // 故事：心形 + 实体文字 + 时间线
+      } else if (screenIndex === 5) {
+        autoFireworks = true;
+      } else if (screenIndex === 6) {
+        autoFireworks = true;
+        finalOverlay.style.display = 'flex';
+      }
+      updateStageLabel();
+    }
+
+    updateScreenVisibility();
+
+    // ========= 粒子文字更新 & 爆炸 =========
+    function updateParticleTexts(dt) {
+      if (particleTexts.length === 0) return;
+
+      const attractSpeed = 4.0;
+
+      particleTexts.forEach(p => {
+        if (!p.points) return;
+        const posAttr = p.points.geometry.getAttribute('position');
+        const posArr = p.positions;
+        const baseArr = p.basePositions;
+        const velArr = p.velocities;
+
+        if (p.exploding) {
+          p.life -= dt;
+          for (let i = 0; i < posArr.length; i += 3) {
+            velArr[i + 1] -= 9.8 * dt * 0.4;
+            posArr[i]     += velArr[i] * dt;
+            posArr[i + 1] += velArr[i + 1] * dt;
+            posArr[i + 2] += velArr[i + 2] * dt;
+          }
+          if (p.life <= 0) {
+            for (let i = 0; i < posArr.length; i += 3) {
+              const r = 40 * Math.cbrt(Math.random());
+              const theta = Math.random() * Math.PI * 2;
+              const phi = Math.acos(2 * Math.random() - 1);
+              posArr[i]     = r * Math.sin(phi) * Math.cos(theta);
+              posArr[i + 1] = r * Math.sin(phi) * Math.sin(theta);
+              posArr[i + 2] = r * Math.cos(phi);
+              velArr[i] = velArr[i + 1] = velArr[i + 2] = 0;
+            }
+            p.exploding = false;
+          }
+        } else {
+          for (let i = 0; i < posArr.length; i += 3) {
+            posArr[i]     += (baseArr[i]     - posArr[i])     * attractSpeed * dt;
+            posArr[i + 1] += (baseArr[i + 1] - posArr[i + 1]) * attractSpeed * dt;
+            posArr[i + 2] += (baseArr[i + 2] - posArr[i + 2]) * attractSpeed * dt;
+          }
+        }
+
+        for (let i = 0; i < posArr.length; i++) {
+          posAttr.array[i] = posArr[i];
+        }
+        posAttr.needsUpdate = true;
+      });
+    }
+
+    function triggerParticleExplosion() {
+      if (particleTexts.length === 0) return;
+      particleTexts.forEach(p => {
+        if (!p.points) return;
+        const velArr = p.velocities;
+        const posArr = p.positions;
+        for (let i = 0; i < posArr.length; i += 3) {
+          const dir = new THREE.Vector3(
+            (Math.random() - 0.5),
+            (Math.random() - 0.2),
+            (Math.random() - 0.5)
+          ).normalize().multiplyScalar(18 + Math.random() * 10);
+          velArr[i]     = dir.x;
+          velArr[i + 1] = dir.y;
+          velArr[i + 2] = dir.z;
+        }
+        p.exploding = true;
+        p.life = 1.2;
+      });
+    }
+
+    // ========= 键盘交互 =========
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        screenIndex = Math.min(6, screenIndex + 1);
+        updateScreenVisibility();
+      } else if (e.key === 'ArrowLeft') {
+        screenIndex = Math.max(1, screenIndex - 1);
+        updateScreenVisibility();
+      } else if (e.key === 'c' || e.key === 'C') {
+        themeIndex = (themeIndex + 1) % THEMES.length;
+        applyTheme();
+      } else if ((e.key === 'x' || e.key === 'X') && screenIndex === 3) {
+        triggerParticleExplosion();
+      } else if (e.code === 'Space' && screenIndex >= 5) {
+        spawnFirework();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // ========= 主循环 =========
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const dt = clock.getDelta();
+      const t = clock.getElapsedTime();
+
+      controls.update();
+
+      stars.rotation.y += 0.0005;
+      stars.rotation.z += 0.0002;
+
+      const beat = 0.5 + 0.5 * Math.sin(t * 2.0);
+      const baseScale = 1 + beat * 0.12;
+      heart.scale.set(baseScale, baseScale, baseScale);
+      heart.rotation.y = Math.sin(t * 0.4) * 0.4;
+      heart.rotation.x = Math.sin(t * 0.2) * 0.15;
+
+      if (screenIndex >= 2) {
+        textGroup.position.y = Math.sin(t * 0.8) * 0.8;
+        textGroup.rotation.y = Math.sin(t * 0.3) * 0.18;
+      }
+
+      if (screenIndex >= 4) {
+        timelineGroup.position.x = Math.sin(t * 0.5) * 0.4;
+      }
+
+      if (finalQuestionMesh && screenIndex === 6) {
+        const s = 1 + Math.sin(t * 1.5) * 0.05;
+        finalQuestionMesh.visible = true;
+        finalQuestionMesh.scale.set(s, s, s);
+      }
+
+      if (screenIndex === 3) {
+        updateParticleTexts(dt);
+      }
+
+      if (autoFireworks) {
+        fireworkTimer += dt;
+        if (fireworkTimer > 1.2) {
+          fireworkTimer = 0;
+          spawnFirework();
+        }
+      }
+
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        const f = fireworks[i];
+        f.update(dt);
+        if (f.isDead()) {
+          scene.remove(f.points);
+          fireworks.splice(i, 1);
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ========= 自适应（保持 9:16 画布） =========
+    window.addEventListener('resize', () => {
+      const w = app.clientWidth;
+      const h = app.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+  </script>
+</body>
+</html>
