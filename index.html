@@ -115,11 +115,61 @@
       transform: translateY(1px);
       box-shadow: 0 4px 10px rgba(255,63,142,0.5);
     }
+    /* 提示隐藏 */
     #hint {
-  display: none !important;
-}
+      display: none !important;
+    }
 
+    /* ===== 手机端按钮区域 ===== */
+    #mobile-actions,
+    #mobile-extra {
+      position: absolute;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      z-index: 12;
+    }
+    /* 下一屏/上一屏（底部） */
+    #mobile-actions {
+      bottom: 10px;
+    }
+    /* LOVE爆炸 / 烟花 / 主题（稍微往上） */
+    #mobile-extra {
+      bottom: 50px;
+    }
+    #mobile-actions button,
+    #mobile-extra button {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 11px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      white-space: nowrap;
+    }
+    #mobile-actions button:active,
+    #mobile-extra button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      background: rgba(255,105,180,0.85);
+      border-color: rgba(255,200,230,0.9);
+    }
 
+    /* 大屏如果不想看到按钮，可以打开下面这段注释：
+    @media (min-width: 900px) {
+      #mobile-actions,
+      #mobile-extra {
+        display: none;
+      }
+    }
+    */
   </style>
 </head>
 <body>
@@ -128,6 +178,17 @@
     <button id="fs-btn" title="切换全屏（快捷键 F）">⛶ 全屏</button>
     <div id="stage-label">Screen 1 / 6 · 星空</div>
     <div id="hint"></div>
+
+    <!-- 手机端操作按钮 -->
+    <div id="mobile-extra">
+      <button id="boom-btn">LOVE 爆炸 💥</button>
+      <button id="fire-btn">放烟花 🎆</button>
+      <button id="theme-btn">切换主题 🎨</button>
+    </div>
+    <div id="mobile-actions">
+      <button id="prev-btn">◀ 上一屏</button>
+      <button id="next-btn">下一屏 ▶</button>
+    </div>
 
     <div id="final-overlay">
       <div class="box">
@@ -160,9 +221,10 @@
       nameWord: 'E.dan',
       subWord: 'You are my favorite feeling',
       timeline: [
-        '2025.07.04 遇见你',
-        'Then 爱上你',
-        'Then 想和你走下去'
+        '2025.07.04 I met you',
+        'Then I fell in love with you',
+        'Then I wanted to be with you'
+
       ],
       finalQuestion: '做我女朋友好吗？'
     };
@@ -199,6 +261,13 @@
     const yesBtn = document.getElementById('yes-btn');
     const finalQuestionEl = finalOverlay.querySelector('.question');
     const fsBtn = document.getElementById('fs-btn');
+
+    // 手机按钮
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const boomBtn = document.getElementById('boom-btn');
+    const fireBtn = document.getElementById('fire-btn');
+    const themeBtn = document.getElementById('theme-btn');
 
     hintEl.textContent =
 `操作说明（竖屏录抖音专用）：
@@ -461,7 +530,7 @@ Enter / → ：下一屏
           timelineMeshes.push(mesh);
         });
 
-        // 3D 问句（可选）
+        // 3D 问句
         const qMat = mainMat.clone();
         qMat.color.set(0xfff5f5);
         qMat.emissive.set(0xff4b9f);
@@ -610,6 +679,15 @@ Enter / → ：下一屏
       updateStageLabel();
     }
 
+    function goNextScreen() {
+      screenIndex = Math.min(6, screenIndex + 1);
+      updateScreenVisibility();
+    }
+    function goPrevScreen() {
+      screenIndex = Math.max(1, screenIndex - 1);
+      updateScreenVisibility();
+    }
+
     updateScreenVisibility();
 
     // ========= 粒子文字更新 & 爆炸 =========
@@ -684,11 +762,9 @@ Enter / → ：下一屏
     // ========= 键盘交互 =========
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === 'ArrowRight') {
-        screenIndex = Math.min(6, screenIndex + 1);
-        updateScreenVisibility();
+        goNextScreen();
       } else if (e.key === 'ArrowLeft') {
-        screenIndex = Math.max(1, screenIndex - 1);
-        updateScreenVisibility();
+        goPrevScreen();
       } else if (e.key === 'c' || e.key === 'C') {
         themeIndex = (themeIndex + 1) % THEMES.length;
         applyTheme();
@@ -700,6 +776,44 @@ Enter / → ：下一屏
         toggleFullscreen();
       }
     });
+
+    // ========= 手机按钮交互 =========
+    if (prevBtn && nextBtn && boomBtn && fireBtn && themeBtn) {
+      prevBtn.addEventListener('click', () => {
+        goPrevScreen();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        goNextScreen();
+      });
+
+      boomBtn.addEventListener('click', () => {
+        // 如果还没到第 3 屏，先切到第 3 屏再爆炸
+        if (screenIndex !== 3) {
+          screenIndex = 3;
+          updateScreenVisibility();
+          setTimeout(() => {
+            triggerParticleExplosion();
+          }, 120);
+        } else {
+          triggerParticleExplosion();
+        }
+      });
+
+      fireBtn.addEventListener('click', () => {
+        // 至少从第 5 屏开始放烟花
+        if (screenIndex < 5) {
+          screenIndex = 5;
+          updateScreenVisibility();
+        }
+        spawnFirework();
+      });
+
+      themeBtn.addEventListener('click', () => {
+        themeIndex = (themeIndex + 1) % THEMES.length;
+        applyTheme();
+      });
+    }
 
     // ========= 主循环 =========
     const clock = new THREE.Clock();
