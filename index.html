@@ -1,233 +1,411 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Merry Christmas 🎄</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: radial-gradient(circle at center, #0d1a2b 0%, #000000 100%);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #fff;
-            font-family: 'Arial', sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Christmas Love · E.dan</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; overflow: hidden; background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    /* 竖屏 9:16 容器 */
+    #app {
+      position: absolute; inset: 0; margin: auto;
+      height: var(--vh, 100vh); aspect-ratio: 9 / 16; max-width: 100vw;
+      border-radius: 0; overflow: hidden;
+      background: radial-gradient(circle at top, #0f2027 0%, #203a43 60%, #2c5364 100%); /* 圣诞夜色背景 */
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    
+    /* UI 元素 */
+    #stage-label {
+      position: absolute; top: 12px; right: 12px; z-index: 10;
+      padding: 4px 10px; border-radius: 20px; font-size: 10px;
+      color: #aaddff; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(4px);
+    }
+    #final-overlay {
+      position: absolute; inset: 0; display: none;
+      align-items: center; justify-content: center; z-index: 20;
+      backdrop-filter: blur(10px); background: rgba(0,0,0,0.6);
+    }
+    #final-overlay .box {
+      background: rgba(20, 30, 40, 0.9); border-radius: 20px;
+      padding: 30px; text-align: center; border: 1px solid rgba(100,255,100,0.3);
+      box-shadow: 0 0 30px rgba(0,255,127,0.2);
+    }
+    #final-overlay .question { font-size: 18px; color: #fff; margin-bottom: 20px; }
+    #final-overlay button {
+      padding: 10px 24px; border-radius: 20px; border: none; font-size: 16px; cursor: pointer;
+      background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff;
+      box-shadow: 0 4px 15px rgba(56,239,125,0.4);
+    }
 
-        canvas {
-            display: block;
-        }
-
-        #overlay {
-            position: absolute;
-            bottom: 10%;
-            text-align: center;
-            pointer-events: none; /* 让点击穿透，不影响Canvas */
-            z-index: 10;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin: 0;
-            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 40px #ff0000;
-            font-family: 'Brush Script MT', cursive;
-            background: linear-gradient(to right, #ff0000, #00ff00, #ffffff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        p {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            margin-top: 10px;
-            letter-spacing: 2px;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* 移动端适配调整 */
-        @media (max-width: 600px) {
-            h1 { font-size: 2.5rem; }
-            p { font-size: 1rem; }
-        }
-    </style>
+    /* 底部按钮组 */
+    #mobile-controls {
+      position: absolute; bottom: 20px; left: 0; right: 0;
+      display: flex; flex-direction: column; gap: 10px; padding: 0 15px; z-index: 15;
+    }
+    .row { display: flex; gap: 8px; justify-content: center; }
+    button.ctrl-btn {
+      flex: 1; padding: 10px 0; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4);
+      color: #fff; font-size: 12px; backdrop-filter: blur(8px);
+    }
+    button.ctrl-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.98); }
+    
+    /* 隐藏 PC 端不需要的 */
+    @media (min-width: 768px) {
+        #app { border-radius: 20px; max-height: 90vh; }
+    }
+  </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <h1>Merry Christmas</h1>
-        <p>Wishing you joy & happiness</p>
+<div id="app">
+  <div id="stage-label">Screen 1 / 6 · Snowy Night</div>
+  
+  <div id="final-overlay">
+    <div class="box">
+      <div class="question">这个圣诞节<br>做我女朋友好吗？🎄</div>
+      <button id="yes-btn">我愿意 ❤️</button>
     </div>
+  </div>
+
+  <div id="mobile-controls">
+    <div class="row">
+      <button class="ctrl-btn" id="boom-btn">💥 爆炸文字</button>
+      <button class="ctrl-btn" id="fire-btn">🎆 放烟花</button>
+      <button class="ctrl-btn" id="theme-btn">🎨 换肤</button>
+    </div>
+    <div class="row">
+      <button class="ctrl-btn" id="prev-btn">◀ 上一步</button>
+      <button class="ctrl-btn" id="next-btn">下一步 ▶</button>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js",
+    "three/examples/jsm/loaders/FontLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/FontLoader.js",
+    "three/examples/jsm/geometries/TextGeometry.js": "https://unpkg.com/three@0.160.0/examples/jsm/geometries/TextGeometry.js"
+  }
+}
+</script>
+
+<script type="module">
+  function fixVh() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh * 100}px`);
+  }
+  fixVh(); window.addEventListener('resize', fixVh);
+
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+  import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+
+  // --- 配置 ---
+  const CONFIG = {
+    mainWord: 'Merry',
+    nameWord: 'Christmas',
+    subWord: 'To My E.dan',
+    timeline: [
+        'First time we met',
+        'Falling in love',
+        'Forever together'
+    ]
+  };
+
+  const app = document.getElementById('app');
+  const stageLabel = document.getElementById('stage-label');
+
+  // --- 场景初始化 ---
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0f2027, 0.008); // 雾气加重，增加氛围
+
+  const camera = new THREE.PerspectiveCamera(60, app.clientWidth / app.clientHeight, 0.1, 500);
+  camera.position.set(0, 5, 60);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(app.clientWidth, app.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  app.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.5;
+
+  // --- 灯光 ---
+  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  const pointLight = new THREE.PointLight(0xffaa00, 1.5, 100);
+  pointLight.position.set(10, 20, 20);
+  scene.add(pointLight);
+
+  // ============================
+  // 🎄 新增：3D 粒子圣诞树
+  // ============================
+  const treeGroup = new THREE.Group();
+  scene.add(treeGroup);
+
+  function createParticleTree() {
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    const colors = [];
+    const colorObj = new THREE.Color();
     
-    <canvas id="treeCanvas"></canvas>
+    // 螺旋树体
+    for(let i = 0; i < 1500; i++) {
+        const t = i / 1500;
+        const angle = t * Math.PI * 25; // 旋转圈数
+        const radius = (1 - t) * 12;    // 底部宽顶部尖
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = t * 30 - 15;          // 高度范围
+        
+        // 加入一些随机扰动，让树看起来更自然
+        vertices.push(x + (Math.random()-0.5), y, z + (Math.random()-0.5));
+        
+        // 颜色渐变：深绿 -> 浅绿 -> 顶端金色
+        if (t > 0.95) colorObj.set(0xffd700); // 顶端星星色
+        else colorObj.setHSL(0.35, 0.8, 0.3 + t * 0.4);
+        
+        colors.push(colorObj.r, colorObj.g, colorObj.b);
+    }
+    
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    
+    const material = new THREE.PointsMaterial({
+        size: 0.6,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.9
+    });
+    
+    const tree = new THREE.Points(geometry, material);
+    treeGroup.add(tree);
 
-    <script>
-        const canvas = document.getElementById('treeCanvas');
-        const ctx = canvas.getContext('2d');
+    // 树顶星星
+    const starGeo = new THREE.OctahedronGeometry(1.5, 0);
+    const starMat = new THREE.MeshBasicMaterial({ color: 0xffd700, wireframe: true });
+    const topStar = new THREE.Mesh(starGeo, starMat);
+    topStar.position.y = 16;
+    treeGroup.add(topStar);
+    
+    // 树下的光晕
+    const groundLight = new THREE.PointLight(0x00ff00, 0.5, 30);
+    groundLight.position.set(0, -15, 0);
+    treeGroup.add(groundLight);
+  }
+  createParticleTree();
+  treeGroup.visible = true; // 默认显示
 
-        let width, height;
-        let particles = [];
-        const particleCount = 1000; // 粒子数量，手机端如果卡顿可适当调小
-        let angle = 0;
+  // ============================
+  // ❄️ 新增：飘雪效果
+  // ============================
+  const snowGeo = new THREE.BufferGeometry();
+  const snowCount = 1000;
+  const snowPos = new Float32Array(snowCount * 3);
+  const snowVel = new Float32Array(snowCount); // 下落速度
 
-        // 响应式画布大小
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+  for(let i=0; i<snowCount; i++) {
+      snowPos[i*3] = (Math.random() - 0.5) * 100;
+      snowPos[i*3+1] = (Math.random() - 0.5) * 100;
+      snowPos[i*3+2] = (Math.random() - 0.5) * 100;
+      snowVel[i] = Math.random() * 0.1 + 0.05;
+  }
+  snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+  const snowMat = new THREE.PointsMaterial({
+      color: 0xffffff, size: 0.4, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending
+  });
+  const snowSystem = new THREE.Points(snowGeo, snowMat);
+  scene.add(snowSystem);
 
-        // 粒子类
-        class Particle {
-            constructor(type) {
-                this.type = type; // 'tree' or 'snow'
-                this.reset();
-            }
+  // --- 原有的心形 (保留但调整逻辑) ---
+  const heartShape = new THREE.Shape();
+  heartShape.moveTo(0, 0);
+  heartShape.bezierCurveTo(0, 3, -3, 3, -3, 0);
+  heartShape.bezierCurveTo(-3, -3, 3, -3, 3, 0);
+  heartShape.bezierCurveTo(3, 3, 0, 3, 0, 0);
+  const heartGeo = new THREE.ExtrudeGeometry(heartShape, { depth: 2, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.5, bevelThickness: 0.5 });
+  heartGeo.center();
+  const heartMat = new THREE.MeshPhongMaterial({ color: 0xff2b6c, emissive: 0xc90038, shininess: 100 });
+  const heartMesh = new THREE.Mesh(heartGeo, heartMat);
+  heartMesh.scale.set(2,2,2);
+  heartMesh.visible = false; // 初始隐藏
+  scene.add(heartMesh);
 
-            reset() {
-                if (this.type === 'tree') {
-                    // 圣诞树形态逻辑 (圆锥螺旋)
-                    this.angle = Math.random() * Math.PI * 2;
-                    this.h = Math.random(); // 高度 0-1
-                    this.radius = (1 - this.h) * 200; // 底部宽，顶部窄
-                    this.y = (this.h * 400) - 200; // 垂直位置
-                    this.speed = Math.random() * 0.02 + 0.01;
-                    this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
-                    this.size = Math.random() * 2 + 1;
-                } else {
-                    // 雪花逻辑
-                    this.x = Math.random() * width;
-                    this.y = Math.random() * height;
-                    this.speed = Math.random() * 1 + 0.5;
-                    this.size = Math.random() * 2;
-                    this.drift = Math.random() * 0.5 - 0.25;
-                }
-            }
+  // --- 字体加载 & 粒子文字 ---
+  let particleTexts = [];
+  const textGroup = new THREE.Group();
+  scene.add(textGroup);
+  
+  const loader = new FontLoader();
+  loader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+      
+      // 创建粒子文字函数
+      function createTextParticles(text, yPos, color) {
+          const geo = new TextGeometry(text, { font: font, size: 3, height: 0.2 });
+          geo.center();
+          const pts = geo.attributes.position.array;
+          const vertices = [];
+          // 降采样，减少粒子数提高性能
+          for(let i=0; i<pts.length; i+=9) { 
+              vertices.push(pts[i], pts[i+1] + yPos, pts[i+2]);
+          }
+          const bufferGeo = new THREE.BufferGeometry();
+          bufferGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+          
+          const mat = new THREE.PointsMaterial({ color: color, size: 0.3, sizeAttenuation: true });
+          const particles = new THREE.Points(bufferGeo, mat);
+          
+          // 保存原始位置用于爆炸动画
+          particles.userData = { 
+              originalPos: Float32Array.from(vertices), 
+              velocities: new Float32Array(vertices.length).fill(0),
+              exploding: false
+          };
+          
+          textGroup.add(particles);
+          particleTexts.push(particles);
+      }
 
-            update() {
-                if (this.type === 'tree') {
-                    this.angle += this.speed;
-                } else {
-                    this.y += this.speed;
-                    this.x += this.drift;
-                    if (this.y > height) this.y = 0;
-                    if (this.x > width) this.x = 0;
-                    if (this.x < 0) this.x = width;
-                }
-            }
+      createTextParticles(CONFIG.mainWord, 5, 0xff0000); // 红色的 Merry
+      createTextParticles(CONFIG.nameWord, -2, 0x00ff00); // 绿色的 Christmas
+      
+      textGroup.visible = false;
+  });
 
-            draw() {
-                if (this.type === 'tree') {
-                    // 3D 投影计算
-                    // 让树旋转
-                    const currentAngle = this.angle + angle;
-                    const x = Math.cos(currentAngle) * this.radius;
-                    const z = Math.sin(currentAngle) * this.radius;
-                    
-                    // 简单的透视投影
-                    const perspective = 300 / (300 + z + 400); // 摄像机距离
-                    const px = x * perspective + width / 2;
-                    const py = this.y * perspective + height / 2 - 50; // 向上偏移一点
+  // --- 烟花逻辑 (复用) ---
+  const fireworks = [];
+  function spawnFirework() {
+      const color = new THREE.Color().setHSL(Math.random(), 1, 0.5);
+      const geometry = new THREE.BufferGeometry();
+      const count = 100;
+      const positions = new Float32Array(count * 3);
+      const velocities = [];
+      
+      for(let i=0; i<count; i++) {
+          positions[i*3] = (Math.random()-0.5)*5;
+          positions[i*3+1] = (Math.random()-0.5)*5 + 10;
+          positions[i*3+2] = (Math.random()-0.5)*5;
+          
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.random() * Math.PI;
+          const speed = Math.random() * 0.5 + 0.5;
+          velocities.push(
+              Math.sin(phi)*Math.cos(theta)*speed,
+              Math.sin(phi)*Math.sin(theta)*speed,
+              Math.cos(phi)*speed
+          );
+      }
+      
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({ size: 0.5, color: color, transparent: true });
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
+      fireworks.push({ mesh: points, velocities: velocities, life: 1.0 });
+  }
 
-                    // 根据深度调整透明度和大小
-                    const alpha = (z + 200) / 400; 
-                    
-                    ctx.fillStyle = this.color;
-                    ctx.globalAlpha = Math.max(0.1, alpha); // 防止透明度为负
-                    ctx.beginPath();
-                    ctx.arc(px, py, this.size * perspective, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    ctx.fillStyle = "white";
-                    ctx.globalAlpha = 0.6;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
+  // --- 状态控制 ---
+  let screenIndex = 1;
+  const stages = [
+      { name: '雪夜圣诞树', action: () => { treeGroup.visible = true; heartMesh.visible = false; textGroup.visible = false; } },
+      { name: '爱的形状', action: () => { treeGroup.visible = false; heartMesh.visible = true; textGroup.visible = false; } },
+      { name: '粒子表白', action: () => { heartMesh.visible = false; textGroup.visible = true; } },
+      { name: '烟花庆典', action: () => { setInterval(spawnFirework, 800); } },
+      { name: '终极答案', action: () => { document.getElementById('final-overlay').style.display = 'flex'; } }
+  ];
 
-        // 初始化粒子
-        function init() {
-            for (let i = 0; i < 800; i++) {
-                particles.push(new Particle('tree'));
-            }
-            for (let i = 0; i < 200; i++) {
-                particles.push(new Particle('snow'));
-            }
-        }
+  function updateScreen() {
+      stageLabel.textContent = `Screen ${screenIndex} / 5 · ${stages[screenIndex-1].name}`;
+      stages[screenIndex-1].action();
+  }
 
-        // 动画循环
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            
-            // 全局旋转速度
-            angle += 0.005;
+  // 按钮事件
+  document.getElementById('next-btn').onclick = () => { if(screenIndex < 5) { screenIndex++; updateScreen(); }};
+  document.getElementById('prev-btn').onclick = () => { if(screenIndex > 1) { screenIndex--; updateScreen(); }};
+  document.getElementById('fire-btn').onclick = spawnFirework;
+  document.getElementById('boom-btn').onclick = () => {
+      particleTexts.forEach(p => {
+          p.userData.exploding = true;
+          for(let i=0; i<p.userData.velocities.length; i++) p.userData.velocities[i] = (Math.random()-0.5) * 0.5;
+      });
+  };
+  document.getElementById('yes-btn').onclick = function() {
+      this.innerText = "爱你 ❤️ 圣诞快乐";
+      spawnFirework(); spawnFirework();
+  };
 
-            // 按照深度(z轴)排序，确保遮挡关系正确（简单的画家算法）
-            particles.sort((a, b) => {
-                if (a.type !== 'tree' || b.type !== 'tree') return 0;
-                // 这里只对树粒子做简单排序优化视觉
-                const zA = Math.sin(a.angle + angle) * a.radius;
-                const zB = Math.sin(b.angle + angle) * b.radius;
-                return zA - zB;
-            });
+  // --- 动画循环 ---
+  function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
 
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+      // 1. 圣诞树旋转
+      treeGroup.rotation.y += 0.005;
 
-            // 绘制顶部的星星
-            drawStar();
+      // 2. 飘雪
+      const pos = snowSystem.geometry.attributes.position.array;
+      for(let i=0; i<snowCount; i++) {
+          pos[i*3+1] -= snowVel[i]; // Y轴下落
+          if(pos[i*3+1] < -50) pos[i*3+1] = 50; // 循环
+      }
+      snowSystem.geometry.attributes.position.needsUpdate = true;
+      snowSystem.rotation.y += 0.001;
 
-            requestAnimationFrame(animate);
-        }
+      // 3. 心跳
+      if(heartMesh.visible) {
+          const s = 2 + Math.sin(Date.now()*0.003)*0.2;
+          heartMesh.scale.set(s,s,s);
+          heartMesh.rotation.y += 0.01;
+      }
 
-        function drawStar() {
-            // 星星的位置需要跟随树的顶部旋转，这里简化为固定在中心偏上，但加一点光晕
-            const cx = width / 2;
-            const cy = height / 2 - 250 * (300/700); // 大致在树顶
-            
-            ctx.save();
-            ctx.translate(cx, cy);
-            
-            // 星星发光
-            const time = Date.now() * 0.002;
-            const scale = 1 + Math.sin(time) * 0.2;
-            
-            ctx.scale(scale, scale);
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = "#ffd700";
-            
-            ctx.fillStyle = "#ffd700";
-            ctx.beginPath();
-            // 简单的菱形模拟星星
-            ctx.moveTo(0, -10);
-            ctx.lineTo(3, -3);
-            ctx.lineTo(10, 0);
-            ctx.lineTo(3, 3);
-            ctx.lineTo(0, 10);
-            ctx.lineTo(-3, 3);
-            ctx.lineTo(-10, 0);
-            ctx.lineTo(-3, -3);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.restore();
-        }
+      // 4. 粒子爆炸
+      particleTexts.forEach(p => {
+          if(p.userData.exploding) {
+              const pos = p.geometry.attributes.position.array;
+              for(let i=0; i<pos.length; i++) {
+                  pos[i] += p.userData.velocities[i];
+              }
+              p.geometry.attributes.position.needsUpdate = true;
+              p.material.opacity *= 0.98;
+          } else {
+             p.rotation.y = Math.sin(Date.now()*0.001) * 0.2;
+          }
+      });
 
-        init();
-        animate();
-    </script>
+      // 5. 烟花
+      for(let i=fireworks.length-1; i>=0; i--) {
+          const f = fireworks[i];
+          f.life -= 0.02;
+          f.mesh.material.opacity = f.life;
+          const pos = f.mesh.geometry.attributes.position.array;
+          for(let j=0; j<pos.length/3; j++) {
+              pos[j*3] += f.velocities[j*3];
+              pos[j*3+1] += f.velocities[j*3+1] - 0.05; // 重力
+              pos[j*3+2] += f.velocities[j*3+2];
+          }
+          f.mesh.geometry.attributes.position.needsUpdate = true;
+          if(f.life <= 0) { scene.remove(f.mesh); fireworks.splice(i,1); }
+      }
+
+      renderer.render(scene, camera);
+  }
+  
+  updateScreen(); // 初始化状态
+  animate();
+
+</script>
 </body>
 </html>
