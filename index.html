@@ -1,392 +1,363 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Only For You · E.dan</title>
-    <style>
-        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-        body { margin: 0; overflow: hidden; background: #000; font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, Roboto, sans-serif; }
-        #app { position: absolute; inset: 0; height: var(--vh, 100vh); width: 100vw; background: radial-gradient(circle at center, #070712 0%, #000 100%); overflow: hidden; }
-        canvas { display:block; width:100%; height:100%; outline:none; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Only For You · E.dan</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body { margin: 0; overflow: hidden; background: #000; font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, Roboto, sans-serif; }
+    #app { position: absolute; inset: 0; height: var(--vh, 100vh); width: 100vw; background: radial-gradient(circle at center, #070712 0%, #000 100%); overflow: hidden; }
+    canvas { display:block; width:100%; height:100%; outline:none; }
 
-        /* 顶部标签：强对比 + 胶囊底 */
-        #stage-label{
-            position:absolute; top: 14px; left:50%;
-            transform: translateX(-50%);
-            z-index: 30; pointer-events:none;
-            font-size: 14px; letter-spacing: 2px; font-weight: 650;
-            padding: 8px 14px; border-radius: 999px;
-            background: rgba(0,0,0,0.38);
-            border: 1px solid rgba(255,255,255,0.18);
-            backdrop-filter: blur(10px);
-            color: rgba(255,255,255,0.96);
-            text-shadow:
-                    0 1px 0 rgba(0,0,0,0.55),
-                    0 0 12px rgba(255,255,255,0.25),
-                    0 0 22px rgba(255,170,215,0.20);
-        }
+    #stage-label{
+      position:absolute; top: 14px; left:50%;
+      transform: translateX(-50%);
+      z-index: 30; pointer-events:none;
+      font-size: 14px; letter-spacing: 2px; font-weight: 650;
+      padding: 8px 14px; border-radius: 999px;
+      background: rgba(0,0,0,0.38);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(10px);
+      color: rgba(255,255,255,0.96);
+      text-shadow:
+        0 1px 0 rgba(0,0,0,0.55),
+        0 0 12px rgba(255,255,255,0.25),
+        0 0 22px rgba(255,170,215,0.20);
+    }
 
-        /* 左侧优雅文字 */
-        #left-text{
-            position:absolute; left: 18px; top: 44%;
-            transform: translateY(-50%);
-            z-index: 9; pointer-events: none;
-            color: rgba(255,255,255,0.92);
-            font-family: "Times New Roman", Georgia, serif;
-            font-style: italic;
-            text-shadow: 0 0 10px rgba(255,255,255,0.25);
-            opacity: 0.9;
-            line-height: 1.25;
-        }
-        #left-text .title{ font-size: 26px; }
-        #left-text .sub{ font-size: 18px; opacity: 0.85; }
+    #left-text{
+      position:absolute; left: 18px; top: 44%;
+      transform: translateY(-50%);
+      z-index: 9; pointer-events: none;
+      color: rgba(255,255,255,0.92);
+      font-family: "Times New Roman", Georgia, serif;
+      font-style: italic;
+      text-shadow: 0 0 10px rgba(255,255,255,0.25);
+      opacity: 0.9;
+      line-height: 1.25;
+    }
+    #left-text .title{ font-size: 26px; }
+    #left-text .sub{ font-size: 18px; opacity: 0.85; }
 
-        /* 终极表白弹窗 */
-        #final-overlay{
-            position:absolute; inset:0; display:none;
-            align-items:center; justify-content:center; z-index: 100;
-            backdrop-filter: blur(12px);
-            background: rgba(0,0,0,0.62);
-            transition: opacity .5s;
-        }
-        .box{
-            background: rgba(24, 10, 20, 0.88);
-            border-radius: 24px;
-            padding: 32px 24px;
-            width: 80%; max-width: 320px;
-            text-align:center;
-            border: 1px solid rgba(255,255,255,0.10);
-            box-shadow: 0 0 55px rgba(255,200,230,0.16);
-            animation: popIn .6s cubic-bezier(.175,.885,.32,1.275);
-        }
-        @keyframes popIn { from { transform: scale(.5); opacity:0; } to { transform: scale(1); opacity:1; } }
-        .question{ font-size: 20px; color:#fff; margin-bottom: 24px; line-height:1.5; font-weight: 300; }
-        .highlight{ color:#ff9fcf; font-weight: 700; }
-        #yes-btn{
-            padding: 12px 36px;
-            border-radius: 999px;
-            border: none;
-            font-size: 16px;
-            cursor:pointer;
-            color:#fff;
-            background: linear-gradient(135deg, #ff95d0, #ff5fb5);
-            box-shadow: 0 10px 26px rgba(255,120,190,0.35);
-            transition: transform .2s, filter .2s;
-        }
-        #yes-btn:active{ transform: scale(.96); }
-        #yes-btn:hover{ filter: brightness(1.06); }
+    #final-overlay{
+      position:absolute; inset:0; display:none;
+      align-items:center; justify-content:center; z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(0,0,0,0.62);
+      transition: opacity .5s;
+    }
+    .box{
+      background: rgba(24, 10, 20, 0.88);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 80%; max-width: 320px;
+      text-align:center;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 0 55px rgba(255,200,230,0.16);
+      animation: popIn .6s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes popIn { from { transform: scale(.5); opacity:0; } to { transform: scale(1); opacity:1; } }
+    .question{ font-size: 20px; color:#fff; margin-bottom: 24px; line-height:1.5; font-weight: 300; }
+    .highlight{ color:#ff9fcf; font-weight: 700; }
+    #yes-btn{
+      padding: 12px 36px;
+      border-radius: 999px;
+      border: none;
+      font-size: 16px;
+      cursor:pointer;
+      color:#fff;
+      background: linear-gradient(135deg, #ff95d0, #ff5fb5);
+      box-shadow: 0 10px 26px rgba(255,120,190,0.35);
+      transition: transform .2s, filter .2s;
+    }
+    #yes-btn:active{ transform: scale(.96); }
+    #yes-btn:hover{ filter: brightness(1.06); }
 
-        /* 底部控制栏 */
-        #mobile-controls{
-            position:absolute; bottom: 26px; left:0; right:0;
-            display:flex; flex-direction: column; gap: 12px;
-            padding: 0 20px;
-            z-index: 20;
-        }
-        .row{ display:flex; gap: 10px; justify-content:center; }
-        .ctrl-btn{
-            flex: 1;
-            padding: 12px 0;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.88);
-            font-size: 13px;
-            backdrop-filter: blur(10px);
-            transition: background .2s, transform .2s;
-        }
-        .ctrl-btn:active{ background: rgba(255,255,255,0.16); transform: scale(.99); }
-        .primary{ border-color: rgba(255,170,215,0.30); color: rgba(255,235,245,0.92); }
-    </style>
+    #mobile-controls{
+      position:absolute; bottom: 26px; left:0; right:0;
+      display:flex; flex-direction: column; gap: 12px;
+      padding: 0 20px;
+      z-index: 20;
+    }
+    .row{ display:flex; gap: 10px; justify-content:center; }
+    .ctrl-btn{
+      flex: 1;
+      padding: 12px 0;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.88);
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+      transition: background .2s, transform .2s;
+    }
+    .ctrl-btn:active{ background: rgba(255,255,255,0.16); transform: scale(.99); }
+    .primary{ border-color: rgba(255,170,215,0.30); color: rgba(255,235,245,0.92); }
+  </style>
 </head>
 
 <body>
 <div id="app">
-    <div id="stage-label">✨ The Starry Tree ✨</div>
+  <div id="stage-label">✨ The Starry Tree ✨</div>
 
-    <div id="left-text">
-        <div class="title">Merry Christmas</div>
-        <div class="sub" id="left-sub">✨</div>
-    </div>
+  <div id="left-text">
+    <div class="title">Merry Christmas</div>
+    <div class="sub" id="left-sub">✨</div>
+  </div>
 
-    <div id="final-overlay">
-        <div class="box">
-            <div class="question">To <span class="highlight">E.dan</span><br>这个圣诞节<br>做我女朋友好吗？🎄</div>
-            <button id="yes-btn">我愿意 ❤️</button>
-        </div>
+  <div id="final-overlay">
+    <div class="box">
+      <div class="question">To <span class="highlight">E.dan</span><br>这个圣诞节<br>做我女朋友好吗？🎄</div>
+      <button id="yes-btn">我愿意 ❤️</button>
     </div>
+  </div>
 
-    <div id="mobile-controls">
-        <div class="row">
-            <button class="ctrl-btn" id="boom-btn">💥 爆炸</button>
-            <button class="ctrl-btn primary" id="fire-btn">🎆 烟花</button>
-            <button class="ctrl-btn" id="theme-btn">🎨 换色</button>
-        </div>
-        <div class="row">
-            <button class="ctrl-btn" id="prev-btn">◀ 上一幕</button>
-            <button class="ctrl-btn" id="next-btn">下一幕 ▶</button>
-        </div>
+  <div id="mobile-controls">
+    <div class="row">
+      <button class="ctrl-btn" id="boom-btn">💥 爆炸</button>
+      <button class="ctrl-btn primary" id="fire-btn">🎆 烟花</button>
+      <button class="ctrl-btn" id="theme-btn">🎨 换色</button>
     </div>
+    <div class="row">
+      <button class="ctrl-btn" id="prev-btn">◀ 上一幕</button>
+      <button class="ctrl-btn" id="next-btn">下一幕 ▶</button>
+    </div>
+  </div>
 </div>
 
 <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js",
-        "three/examples/jsm/loaders/FontLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/FontLoader.js",
-        "three/examples/jsm/geometries/TextGeometry.js": "https://unpkg.com/three@0.160.0/examples/jsm/geometries/TextGeometry.js",
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js",
+    "three/examples/jsm/loaders/FontLoader.js": "https://unpkg.com/three@0.160.0/examples/jsm/loaders/FontLoader.js",
+    "three/examples/jsm/geometries/TextGeometry.js": "https://unpkg.com/three@0.160.0/examples/jsm/geometries/TextGeometry.js",
 
-        "three/examples/jsm/postprocessing/EffectComposer.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js",
-        "three/examples/jsm/postprocessing/RenderPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js",
-        "three/examples/jsm/postprocessing/UnrealBloomPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js",
-        "three/examples/jsm/postprocessing/ShaderPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js"
-      }
-    }
+    "three/examples/jsm/postprocessing/EffectComposer.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js",
+    "three/examples/jsm/postprocessing/RenderPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js",
+    "three/examples/jsm/postprocessing/UnrealBloomPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js",
+    "three/examples/jsm/postprocessing/ShaderPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js"
+  }
+}
 </script>
 
 <script type="module">
-    function fixVh() {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh * 100}px`);
-    }
-    fixVh(); window.addEventListener('resize', fixVh);
+  function fixVh() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh * 100}px`);
+  }
+  fixVh(); window.addEventListener('resize', fixVh);
 
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-    import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-    import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-    import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-    import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+  import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
-    // =========================
-    // 主题（低饱和粉白 + 克制高光）
-    // =========================
-    const CONFIG = {
-        themes: [
-            { name:"粉白雪夜", bg:'#05050b', fog:'#070710', a:0xffcfe3, b:0xffffff, star:0xffffff },
-            { name:"暖粉圣诞", bg:'#06040a', fog:'#080510', a:0xffb6d6, b:0xfff4fb, star:0xfff6ff },
-            { name:"冷粉极光", bg:'#050612', fog:'#07071a', a:0xffc7e2, b:0xeef8ff, star:0xffffff },
-        ],
-        tree: { yMin:-23, yMax:23, rMax:18, count:14000 },
-        vortex: { baseY:-20.5, height:18.0, turns:3.2, rStart:26, rEnd:6, bands:6, pointsPerBand:2600 }
-    };
-    let colorIdx = 0;
+  const CONFIG = {
+    themes: [
+      { name:"粉白雪夜", bg:'#05050b', fog:'#070710', a:0xffcfe3, b:0xffffff, star:0xffffff },
+      { name:"暖粉圣诞", bg:'#06040a', fog:'#080510', a:0xffb6d6, b:0xfff4fb, star:0xfff6ff },
+      { name:"冷粉极光", bg:'#050612', fog:'#07071a', a:0xffc7e2, b:0xeef8ff, star:0xffffff },
+    ],
+    tree: { yMin:-23, yMax:23, rMax:18, count:14000 },
+    vortex: { baseY:-20.5, height:18.0, turns:3.2, rStart:26, rEnd:6, bands:6, pointsPerBand:2600 }
+  };
+  let colorIdx = 0;
 
-    // =========================
-    // 场景
-    // =========================
-    const app = document.getElementById('app');
-    const scene = new THREE.Scene();
+  const app = document.getElementById('app');
+  const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1600);
-    camera.position.set(0, 12, 54);
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1600);
+  camera.position.set(0, 12, 54);
 
-    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    app.appendChild(renderer.domElement);
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  app.appendChild(renderer.domElement);
 
-    // 关键：色调映射压高光（解决“亮糊一坨”）
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.85;
-    renderer.physicallyCorrectLights = true;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.85;
+  renderer.physicallyCorrectLights = true;
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.55;
-    controls.maxDistance = 140;
-    controls.minDistance = 12;
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.55;
+  controls.maxDistance = 140;
+  controls.minDistance = 12;
 
-    function applyTheme() {
-        const th = CONFIG.themes[colorIdx];
-        scene.background = new THREE.Color(th.bg);
-        scene.fog = new THREE.FogExp2(new THREE.Color(th.fog), 0.010);
-        document.getElementById('left-sub').textContent = th.name;
-    }
-    applyTheme();
+  function applyTheme() {
+    const th = CONFIG.themes[colorIdx];
+    scene.background = new THREE.Color(th.bg);
+    scene.fog = new THREE.FogExp2(new THREE.Color(th.fog), 0.010);
+    document.getElementById('left-sub').textContent = th.name;
+  }
+  applyTheme();
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
-    const key = new THREE.DirectionalLight(0xffffff, 0.48);
-    key.position.set(18, 30, 24);
-    scene.add(key);
-    const fill = new THREE.PointLight(0xffb9df, 0.36, 180);
-    fill.position.set(-16, 10, 18);
-    scene.add(fill);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+  const key = new THREE.DirectionalLight(0xffffff, 0.48);
+  key.position.set(18, 30, 24);
+  scene.add(key);
+  const fill = new THREE.PointLight(0xffb9df, 0.36, 180);
+  fill.position.set(-16, 10, 18);
+  scene.add(fill);
 
-    // 发光点纹理
-    function createPointTexture() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 64; canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        const g = ctx.createRadialGradient(32,32,0, 32,32,32);
-        g.addColorStop(0, 'rgba(255,255,255,1)');
-        g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
-        g.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = g; ctx.fillRect(0,0,64,64);
-        const tex = new THREE.Texture(canvas);
-        tex.needsUpdate = true;
-        return tex;
-    }
-    const glowTex = createPointTexture();
+  function createPointTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const g = ctx.createRadialGradient(32,32,0, 32,32,32);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,64,64);
+    const tex = new THREE.Texture(canvas);
+    tex.needsUpdate = true;
+    return tex;
+  }
+  const glowTex = createPointTexture();
 
-    // =========================
-    // ✅ 选择性 Bloom（只让“树顶星/烟花/爆炸”Bloom，其它点云不Bloom）
-    // =========================
-    const BLOOM_LAYER = 1;
-    const bloomLayer = new THREE.Layers();
-    bloomLayer.set(BLOOM_LAYER);
+  // ============== Selective Bloom ==============
+  const BLOOM_LAYER = 1;
+  const bloomLayer = new THREE.Layers();
+  bloomLayer.set(BLOOM_LAYER);
 
-    const darkMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const materials = new Map();
+  const darkMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const materials = new Map();
 
-    // Bloom pass（单独渲染一张 bloom 纹理）
-    const bloomComposer = new EffectComposer(renderer);
-    bloomComposer.renderToScreen = false;
-    bloomComposer.addPass(new RenderPass(scene, camera));
+  const bloomComposer = new EffectComposer(renderer);
+  bloomComposer.renderToScreen = false;
+  bloomComposer.addPass(new RenderPass(scene, camera));
 
-    const bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        0.55,  // strength：克制
-        0.22,  // radius
-        0.42   // threshold：提高阈值，避免整屏泛光
-    );
-    bloomComposer.addPass(bloomPass);
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    0.55, 0.22, 0.42
+  );
+  bloomComposer.addPass(bloomPass);
 
-    // Final pass：把 bloom 纹理叠加到正常渲染上
-    const finalComposer = new EffectComposer(renderer);
-    finalComposer.addPass(new RenderPass(scene, camera));
+  const finalComposer = new EffectComposer(renderer);
+  finalComposer.addPass(new RenderPass(scene, camera));
 
-    const finalPass = new ShaderPass(new THREE.ShaderMaterial({
-        uniforms: {
-            baseTexture: { value: null },
-            bloomTexture: { value: bloomComposer.renderTarget2.texture }
-        },
-        vertexShader: `
+  const finalPass = new ShaderPass(new THREE.ShaderMaterial({
+    uniforms: {
+      baseTexture: { value: null },
+      bloomTexture: { value: bloomComposer.renderTarget2.texture }
+    },
+    vertexShader: `
       varying vec2 vUv;
-      void main(){
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-      }
+      void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
     `,
-        fragmentShader: `
+    fragmentShader: `
       varying vec2 vUv;
       uniform sampler2D baseTexture;
       uniform sampler2D bloomTexture;
-
       void main(){
         vec4 base = texture2D(baseTexture, vUv);
         vec4 bloom = texture2D(bloomTexture, vUv);
-        gl_FragColor = base + bloom;   // Additive 叠加
+        gl_FragColor = base + bloom;
       }
     `
-    }), "baseTexture");
-    finalComposer.addPass(finalPass);
+  }), "baseTexture");
+  finalComposer.addPass(finalPass);
 
-    function darkenNonBloomed(obj) {
-        if (obj.isMesh || obj.isPoints || obj.isSprite) {
-            const isBloom = bloomLayer.test(obj.layers);
-            if (!isBloom) {
-                materials.set(obj.uuid, obj.material);
-                obj.material = darkMaterial;
-            }
-        }
+  function darkenNonBloomed(obj) {
+    if (obj.isMesh || obj.isPoints || obj.isSprite) {
+      const isBloom = bloomLayer.test(obj.layers);
+      if (!isBloom) {
+        materials.set(obj.uuid, obj.material);
+        obj.material = darkMaterial;
+      }
     }
-    function restoreMaterial(obj) {
-        const mat = materials.get(obj.uuid);
-        if (mat) {
-            obj.material = mat;
-            materials.delete(obj.uuid);
-        }
+  }
+  function restoreMaterial(obj) {
+    const mat = materials.get(obj.uuid);
+    if (mat) { obj.material = mat; materials.delete(obj.uuid); }
+  }
+
+  // ============== Stars ==============
+  const starGroup = new THREE.Group();
+  scene.add(starGroup);
+
+  function buildStars() {
+    while (starGroup.children.length) {
+      const o = starGroup.children.pop();
+      o.geometry?.dispose?.();
+      o.material?.dispose?.();
     }
 
-    // =========================
-    // 星空（不 Bloom，保持点分离）
-    // =========================
-    const starGroup = new THREE.Group();
-    scene.add(starGroup);
+    const layers = [
+      { count: 1600, spread: 260, size: 0.55, opacity: 0.42, rot: 0.006 },
+      { count: 900,  spread: 220, size: 0.85, opacity: 0.32, rot: -0.004 },
+      { count: 520,  spread: 200, size: 1.10, opacity: 0.22, rot: 0.002 },
+    ];
 
-    function buildStars() {
-        while (starGroup.children.length) {
-            const o = starGroup.children.pop();
-            o.geometry?.dispose?.();
-            o.material?.dispose?.();
-        }
+    layers.forEach(cfg => {
+      const pos = new Float32Array(cfg.count * 3);
+      const col = new Float32Array(cfg.count * 3);
 
-        const layers = [
-            { count: 1600, spread: 260, size: 0.55, opacity: 0.42, rot: 0.006 },
-            { count: 900,  spread: 220, size: 0.85, opacity: 0.32, rot: -0.004 },
-            { count: 520,  spread: 200, size: 1.10, opacity: 0.22, rot: 0.002 },
-        ];
+      for (let i = 0; i < cfg.count; i++) {
+        const r = cfg.spread * (0.55 + Math.random() * 0.45);
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
 
-        layers.forEach(cfg => {
-            const pos = new Float32Array(cfg.count * 3);
-            const col = new Float32Array(cfg.count * 3);
+        pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+        pos[i*3+1] = r * Math.cos(phi);
+        pos[i*3+2] = r * Math.sin(phi) * Math.sin(theta);
 
-            for (let i = 0; i < cfg.count; i++) {
-                const r = cfg.spread * (0.55 + Math.random() * 0.45);
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
+        const base = new THREE.Color(0xffffff);
+        base.lerp(new THREE.Color(0xffd6e8), 0.18 + Math.random() * 0.12);
+        col[i*3] = base.r; col[i*3+1] = base.g; col[i*3+2] = base.b;
+      }
 
-                pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-                pos[i*3+1] = r * Math.cos(phi);
-                pos[i*3+2] = r * Math.sin(phi) * Math.sin(theta);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
 
-                const base = new THREE.Color(0xffffff);
-                base.lerp(new THREE.Color(0xffd6e8), 0.18 + Math.random() * 0.12);
-                col[i*3] = base.r; col[i*3+1] = base.g; col[i*3+2] = base.b;
-            }
+      const m = new THREE.PointsMaterial({
+        size: cfg.size,
+        map: glowTex,
+        transparent: true,
+        opacity: cfg.opacity,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
 
-            const g = new THREE.BufferGeometry();
-            g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      const pts = new THREE.Points(g, m);
+      pts.userData.rot = cfg.rot;
+      starGroup.add(pts);
+    });
+  }
+  buildStars();
 
-            const m = new THREE.PointsMaterial({
-                size: cfg.size,
-                map: glowTex,
-                transparent: true,
-                opacity: cfg.opacity,
-                vertexColors: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
+  // ============== Tree (shader points) ==============
+  const treeGroup = new THREE.Group();
+  scene.add(treeGroup);
+  let treeGeometry = null;
+  let treeMat = null;
+  let treeTopStar = null;
 
-            const pts = new THREE.Points(g, m);
-            pts.userData.rot = cfg.rot;
-            starGroup.add(pts);
-        });
-    }
-    buildStars();
-
-    // =========================
-    // 🎄 体积点云树（不 Bloom，靠 toneMapping 保持清晰）
-    // =========================
-    const treeGroup = new THREE.Group();
-    scene.add(treeGroup);
-    let treeGeometry = null;
-    let treeMat = null;
-    let treeTopStar = null;
-
-    function createTreeShaderMaterial() {
-        const th = CONFIG.themes[colorIdx];
-        return new THREE.ShaderMaterial({
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-            uniforms: {
-                uTime: { value: 0 },
-                uColorA: { value: new THREE.Color(th.a) },
-                uColorB: { value: new THREE.Color(th.b) },
-                uIntensity: { value: 0.78 }, // 降一点，避免峰值炸白
-                uTwinkle: { value: 0.80 },
-                uPointScale: { value: 0.80 }
-            },
-            vertexShader: `
+  function createTreeShaderMaterial() {
+    const th = CONFIG.themes[colorIdx];
+    return new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uColorA: { value: new THREE.Color(th.a) },
+        uColorB: { value: new THREE.Color(th.b) },
+        uIntensity: { value: 0.78 },
+        uTwinkle: { value: 0.80 },
+        uPointScale: { value: 0.80 }
+      },
+      vertexShader: `
         attribute float aSize;
         attribute float aPhase;
         attribute float aP;
@@ -422,7 +393,7 @@
           gl_PointSize = clamp(size, 1.0, 70.0);
         }
       `,
-            fragmentShader: `
+      fragmentShader: `
         precision highp float;
 
         varying float vP;
@@ -454,228 +425,236 @@
           gl_FragColor = vec4(outCol, alpha);
         }
       `
-        });
+    });
+  }
+
+  function createVolumetricTree() {
+    if (treeGeometry) treeGeometry.dispose();
+    if (treeMat) treeMat.dispose();
+
+    const count = CONFIG.tree.count;
+    const positions = new Float32Array(count * 3);
+    const aSize = new Float32Array(count);
+    const aPhase = new Float32Array(count);
+    const aP = new Float32Array(count);
+
+    const yMin = CONFIG.tree.yMin;
+    const yMax = CONFIG.tree.yMax;
+    const rMaxAll = CONFIG.tree.rMax;
+
+    for (let i = 0; i < count; i++) {
+      const p = i / (count - 1);
+      const y = yMin + p * (yMax - yMin);
+      const rMax = (1 - p) * rMaxAll;
+
+      const density = 0.25 + 0.75 * Math.pow(1 - Math.abs(p - 0.55) * 1.6, 2);
+      const rr = rMax * Math.sqrt(Math.random()) * (0.55 + 0.45 * density);
+      const ang = Math.random() * Math.PI * 2;
+      const swirl = 0.65 * Math.sin(p * 14.0 + ang * 0.35);
+
+      let x = Math.cos(ang) * rr + swirl * (1 - p) * 0.35;
+      let z = Math.sin(ang) * rr - swirl * (1 - p) * 0.35;
+
+      x += (Math.random() - 0.5) * 0.55;
+      z += (Math.random() - 0.5) * 0.55;
+
+      positions[i*3]   = x;
+      positions[i*3+1] = y + (Math.random() - 0.5) * 0.25;
+      positions[i*3+2] = z;
+
+      aP[i] = p;
+      aPhase[i] = Math.random() * Math.PI * 2;
+      aSize[i] = (0.9 + Math.random() * 1.8) * (1.25 - p * 0.85);
     }
 
-    function createVolumetricTree() {
-        if (treeGeometry) treeGeometry.dispose();
-        if (treeMat) treeMat.dispose();
+    treeGeometry = new THREE.BufferGeometry();
+    treeGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    treeGeometry.setAttribute('aSize', new THREE.BufferAttribute(aSize, 1));
+    treeGeometry.setAttribute('aPhase', new THREE.BufferAttribute(aPhase, 1));
+    treeGeometry.setAttribute('aP', new THREE.BufferAttribute(aP, 1));
 
-        const count = CONFIG.tree.count;
-        const positions = new Float32Array(count * 3);
-        const aSize = new Float32Array(count);
-        const aPhase = new Float32Array(count);
-        const aP = new Float32Array(count);
+    treeMat = createTreeShaderMaterial();
 
-        const yMin = CONFIG.tree.yMin;
-        const yMax = CONFIG.tree.yMax;
-        const rMaxAll = CONFIG.tree.rMax;
+    while (treeGroup.children.length) treeGroup.remove(treeGroup.children[0]);
+    treeGroup.add(new THREE.Points(treeGeometry, treeMat));
 
-        for (let i = 0; i < count; i++) {
-            const p = i / (count - 1);
-            const y = yMin + p * (yMax - yMin);
-            const rMax = (1 - p) * rMaxAll;
-
-            const density = 0.25 + 0.75 * Math.pow(1 - Math.abs(p - 0.55) * 1.6, 2);
-            const rr = rMax * Math.sqrt(Math.random()) * (0.55 + 0.45 * density);
-            const ang = Math.random() * Math.PI * 2;
-            const swirl = 0.65 * Math.sin(p * 14.0 + ang * 0.35);
-
-            let x = Math.cos(ang) * rr + swirl * (1 - p) * 0.35;
-            let z = Math.sin(ang) * rr - swirl * (1 - p) * 0.35;
-
-            x += (Math.random() - 0.5) * 0.55;
-            z += (Math.random() - 0.5) * 0.55;
-
-            positions[i*3]   = x;
-            positions[i*3+1] = y + (Math.random() - 0.5) * 0.25;
-            positions[i*3+2] = z;
-
-            aP[i] = p;
-            aPhase[i] = Math.random() * Math.PI * 2;
-            aSize[i] = (0.9 + Math.random() * 1.8) * (1.25 - p * 0.85);
-        }
-
-        treeGeometry = new THREE.BufferGeometry();
-        treeGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        treeGeometry.setAttribute('aSize', new THREE.BufferAttribute(aSize, 1));
-        treeGeometry.setAttribute('aPhase', new THREE.BufferAttribute(aPhase, 1));
-        treeGeometry.setAttribute('aP', new THREE.BufferAttribute(aP, 1));
-
-        treeMat = createTreeShaderMaterial();
-
-        while (treeGroup.children.length) treeGroup.remove(treeGroup.children[0]);
-        treeGroup.add(new THREE.Points(treeGeometry, treeMat));
-
-        // 树顶星：放到 Bloom Layer（只它 Bloom）
-        if (treeTopStar) {
-            treeTopStar.material.dispose();
-            treeGroup.remove(treeTopStar);
-        }
-        const th = CONFIG.themes[colorIdx];
-        treeTopStar = new THREE.Sprite(new THREE.SpriteMaterial({
-            map: glowTex,
-            color: new THREE.Color(th.star),
-            transparent: true,
-            opacity: 0.65,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        }));
-        treeTopStar.position.set(0, yMax + 0.8, 0);
-        treeTopStar.scale.set(7.5, 7.5, 1);
-        treeTopStar.layers.enable(BLOOM_LAYER);
-        treeGroup.add(treeTopStar);
+    if (treeTopStar) {
+      treeTopStar.material.dispose();
+      treeGroup.remove(treeTopStar);
     }
-    createVolumetricTree();
+    const th = CONFIG.themes[colorIdx];
+    treeTopStar = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTex,
+      color: new THREE.Color(th.star),
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    }));
+    treeTopStar.position.set(0, yMax + 0.8, 0);
+    treeTopStar.scale.set(7.5, 7.5, 1);
+    treeTopStar.layers.enable(BLOOM_LAYER);
+    treeGroup.add(treeTopStar);
+  }
+  createVolumetricTree();
 
-    // =========================
-    // 🌀 旋涡点云（不 Bloom，压 opacity/size 保持结构清晰）
-    // =========================
-    const vortexGroup = new THREE.Group();
-    scene.add(vortexGroup);
+  // ============== Vortex ==============
+  const vortexGroup = new THREE.Group();
+  scene.add(vortexGroup);
 
-    let vortexGeos = [];
-    let vortexMats = [];
+  let vortexGeos = [];
+  let vortexMats = [];
+  let stageSprite = null; // ✅ 顶部舞台光晕
 
-    function disposeVortex() {
-        vortexGeos.forEach(g => g.dispose?.());
-        vortexMats.forEach(m => m.dispose?.());
-        vortexGeos = []; vortexMats = [];
-        while (vortexGroup.children.length) vortexGroup.remove(vortexGroup.children[0]);
-    }
+  function disposeVortex() {
+    vortexGeos.forEach(g => g.dispose?.());
+    vortexMats.forEach(m => m.dispose?.());
+    vortexGeos = []; vortexMats = [];
+    while (vortexGroup.children.length) vortexGroup.remove(vortexGroup.children[0]);
+    stageSprite = null;
+  }
 
-    function buildVortex() {
-        disposeVortex();
-        const th = CONFIG.themes[colorIdx];
-        const baseY = CONFIG.vortex.baseY;
+  function buildVortex() {
+    disposeVortex();
+    const th = CONFIG.themes[colorIdx];
+    const baseY = CONFIG.vortex.baseY;
 
-        for (let b = 0; b < CONFIG.vortex.bands; b++) {
-            const count = CONFIG.vortex.pointsPerBand;
-            const pos = new Float32Array(count * 3);
-            const col = new Float32Array(count * 3);
+    for (let b = 0; b < CONFIG.vortex.bands; b++) {
+      const count = CONFIG.vortex.pointsPerBand;
+      const pos = new Float32Array(count * 3);
+      const col = new Float32Array(count * 3);
 
-            const bandHeightShift = (b - (CONFIG.vortex.bands - 1) / 2) * 0.35;
-            const thickness = 0.55 + b * 0.08;
-            const localTurns = CONFIG.vortex.turns + (b - 2) * 0.10;
+      const bandHeightShift = (b - (CONFIG.vortex.bands - 1) / 2) * 0.35;
+      const thickness = 0.55 + b * 0.08;
+      const localTurns = CONFIG.vortex.turns + (b - 2) * 0.10;
 
-            for (let i = 0; i < count; i++) {
-                const p = i / (count - 1);
-                const y = baseY + p * CONFIG.vortex.height + bandHeightShift;
+      for (let i = 0; i < count; i++) {
+        const p = i / (count - 1);
+        const y = baseY + p * CONFIG.vortex.height + bandHeightShift;
 
-                const rBase = THREE.MathUtils.lerp(CONFIG.vortex.rStart, CONFIG.vortex.rEnd, p);
-                const jitterR = (Math.random() - 0.5) * thickness * 1.35;
-                const r = rBase + jitterR;
+        const rBase = THREE.MathUtils.lerp(CONFIG.vortex.rStart, CONFIG.vortex.rEnd, p);
+        const jitterR = (Math.random() - 0.5) * thickness * 1.35;
+        const r = rBase + jitterR;
 
-                const ang = p * Math.PI * 2 * localTurns + b * 0.6 + (Math.random() - 0.5) * 0.04;
-                const cross = (Math.random() - 0.5) * thickness;
+        const ang = p * Math.PI * 2 * localTurns + b * 0.6 + (Math.random() - 0.5) * 0.04;
+        const cross = (Math.random() - 0.5) * thickness;
 
-                pos[i*3]   = Math.cos(ang) * (r + cross) + (Math.random()-0.5)*0.12;
-                pos[i*3+1] = y + (Math.random()-0.5)*0.16;
-                pos[i*3+2] = Math.sin(ang) * (r - cross) + (Math.random()-0.5)*0.12;
+        pos[i*3]   = Math.cos(ang) * (r + cross) + (Math.random()-0.5)*0.12;
+        pos[i*3+1] = y + (Math.random()-0.5)*0.16;
+        pos[i*3+2] = Math.sin(ang) * (r - cross) + (Math.random()-0.5)*0.12;
 
-                const c = new THREE.Color(th.a).lerp(new THREE.Color(th.b), 0.55 + 0.45 * p);
-                col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
-            }
+        const c = new THREE.Color(th.a).lerp(new THREE.Color(th.b), 0.55 + 0.45 * p);
+        col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
+      }
 
-            const g = new THREE.BufferGeometry();
-            g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
 
-            const m = new THREE.PointsMaterial({
-                size: 0.45 + b * 0.04,
-                map: glowTex,
-                transparent: true,
-                opacity: 0.18,
-                vertexColors: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-
-            const pts = new THREE.Points(g, m);
-            pts.userData = { band: b, speed: 0.18 + b * 0.02, wobble: 0.22 + b * 0.02 };
-            vortexGroup.add(pts);
-
-            vortexGeos.push(g);
-            vortexMats.push(m);
-        }
-
-        // 底部雾海盘（更克制，避免糊）
-        {
-            const count = 9000;
-            const pos = new Float32Array(count * 3);
-            const col = new Float32Array(count * 3);
-
-            for (let i = 0; i < count; i++) {
-                const rr = (18 + Math.random() * 38) * Math.sqrt(Math.random());
-                const ang = Math.random() * Math.PI * 2;
-
-                pos[i*3]   = Math.cos(ang) * rr + (Math.random()-0.5)*0.25;
-                pos[i*3+1] = baseY + (Math.random()-0.5)*1.4;
-                pos[i*3+2] = Math.sin(ang) * rr + (Math.random()-0.5)*0.25;
-
-                const c = new THREE.Color(th.a).lerp(new THREE.Color(0xffffff), 0.55 + Math.random() * 0.35);
-                col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
-            }
-
-            const g = new THREE.BufferGeometry();
-            g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-
-            const m = new THREE.PointsMaterial({
-                size: 0.42,
-                map: glowTex,
-                transparent: true,
-                opacity: 0.14,
-                vertexColors: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-
-            const disk = new THREE.Points(g, m);
-            disk.userData = { isDisk: true };
-            vortexGroup.add(disk);
-
-            vortexGeos.push(g);
-            vortexMats.push(m);
-        }
-    }
-    buildVortex();
-
-    // =========================
-    // ❄️ 飘雪（不 Bloom）
-    // =========================
-    const snowMat = new THREE.ShaderMaterial({
+      const m = new THREE.PointsMaterial({
+        size: 0.45 + b * 0.04,
+        map: glowTex,
         transparent: true,
-        depthWrite: false,
+        opacity: 0.18,
+        vertexColors: true,
         blending: THREE.AdditiveBlending,
-        uniforms: { uTime: { value: 0 }, uTex: { value: glowTex } },
-        vertexShader: `
+        depthWrite: false
+      });
+
+      const pts = new THREE.Points(g, m);
+      pts.userData = { band: b };
+      vortexGroup.add(pts);
+
+      vortexGeos.push(g);
+      vortexMats.push(m);
+    }
+
+    // 底部雾海盘
+    {
+      const count = 9000;
+      const pos = new Float32Array(count * 3);
+      const col = new Float32Array(count * 3);
+
+      for (let i = 0; i < count; i++) {
+        const rr = (18 + Math.random() * 38) * Math.sqrt(Math.random());
+        const ang = Math.random() * Math.PI * 2;
+
+        pos[i*3]   = Math.cos(ang) * rr + (Math.random()-0.5)*0.25;
+        pos[i*3+1] = baseY + (Math.random()-0.5)*1.4;
+        pos[i*3+2] = Math.sin(ang) * rr + (Math.random()-0.5)*0.25;
+
+        const c = new THREE.Color(th.a).lerp(new THREE.Color(0xffffff), 0.55 + Math.random() * 0.35);
+        col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
+      }
+
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+      const m = new THREE.PointsMaterial({
+        size: 0.42,
+        map: glowTex,
+        transparent: true,
+        opacity: 0.14,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const disk = new THREE.Points(g, m);
+      disk.userData = { isDisk: true };
+      vortexGroup.add(disk);
+
+      vortexGeos.push(g);
+      vortexMats.push(m);
+    }
+
+    // ✅ 顶部舞台光晕（托起文字）
+    stageSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTex,
+      color: new THREE.Color(th.b),
+      transparent: true,
+      opacity: 0.18,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    }));
+    stageSprite.position.set(0, CONFIG.vortex.baseY + CONFIG.vortex.height - 1.2, 0);
+    stageSprite.scale.set(18, 18, 1);
+    // 想更仙：开启 Bloom，但它很克制，不会炸屏
+    stageSprite.layers.enable(BLOOM_LAYER);
+    vortexGroup.add(stageSprite);
+  }
+  buildVortex();
+
+  // ============== Snow ==============
+  const snowMat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uTex: { value: glowTex } },
+    vertexShader: `
       attribute float aSize;
       attribute float aSpeed;
       attribute float aDrift;
       attribute float aPhase;
       varying float vAlpha;
       uniform float uTime;
-
       void main() {
         vec3 pos = position;
         pos.y -= mod(uTime * aSpeed + aPhase, 90.0);
         pos.x += sin(uTime * 0.55 + aPhase) * aDrift;
         pos.z += cos(uTime * 0.50 + aPhase) * aDrift;
-
         vec4 mv = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mv;
-
         float dist = max(1.0, -mv.z);
         gl_PointSize = clamp(aSize * (250.0 / dist), 1.0, 22.0);
         vAlpha = clamp(1.0 / (0.032 * dist), 0.10, 0.85);
       }
     `,
-        fragmentShader: `
+    fragmentShader: `
       precision highp float;
       varying float vAlpha;
       uniform sampler2D uTex;
-
       void main() {
         vec4 tex = texture2D(uTex, gl_PointCoord);
         float a = tex.a * vAlpha;
@@ -684,430 +663,406 @@
         gl_FragColor = vec4(col, a);
       }
     `
+  });
+
+  const snow = new THREE.Points(new THREE.BufferGeometry(), snowMat);
+  scene.add(snow);
+
+  function buildSnow() {
+    const count = 2200;
+    const pos = new Float32Array(count * 3);
+    const size = new Float32Array(count);
+    const speed = new Float32Array(count);
+    const drift = new Float32Array(count);
+    const phase = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      pos[i*3]   = (Math.random() - 0.5) * 140;
+      pos[i*3+1] = Math.random() * 90 + 10;
+      pos[i*3+2] = (Math.random() - 0.5) * 160;
+
+      const z = Math.abs(pos[i*3+2]);
+      const depthFactor = 1.0 - Math.min(z / 160, 1.0);
+
+      size[i] = (0.8 + Math.random() * 2.0) * (0.55 + depthFactor);
+      speed[i] = 2.2 + Math.random() * 5.5;
+      drift[i] = 0.06 + Math.random() * 0.20;
+      phase[i] = Math.random() * 90.0;
+    }
+
+    snow.geometry.dispose();
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aSize', new THREE.BufferAttribute(size, 1));
+    g.setAttribute('aSpeed', new THREE.BufferAttribute(speed, 1));
+    g.setAttribute('aDrift', new THREE.BufferAttribute(drift, 1));
+    g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+    snow.geometry = g;
+  }
+  buildSnow();
+
+  // ============== Heart ==============
+  const heartGroup = new THREE.Group();
+  scene.add(heartGroup);
+
+  const heartShape = new THREE.Shape();
+  heartShape.moveTo(0, 0);
+  heartShape.bezierCurveTo(0, 3, -3, 3, -3, 0);
+  heartShape.bezierCurveTo(-3, -3, 3, -3, 3, 0);
+  heartShape.bezierCurveTo(3, 3, 0, 3, 0, 0);
+
+  const heartGeo = new THREE.ExtrudeGeometry(heartShape, { depth:2, bevelEnabled:true, bevelSegments:3, steps:2, bevelSize:0.5, bevelThickness:0.5 });
+  heartGeo.center();
+
+  const heartMesh = new THREE.Mesh(heartGeo, new THREE.MeshPhongMaterial({
+    color: 0xff7cbc, emissive: 0x2b0017, shininess: 180, specular: 0xffffff
+  }));
+  heartMesh.scale.set(2,2,2);
+  heartGroup.add(heartMesh);
+
+  const haloGeo = new THREE.BufferGeometry();
+  const haloPos = [];
+  for (let i=0;i<240;i++){
+    const t = i/240*Math.PI*2;
+    const r = 8.5 + Math.random()*0.8;
+    haloPos.push(Math.cos(t)*r, (Math.random()-0.5)*2.2, Math.sin(t)*r);
+  }
+  haloGeo.setAttribute('position', new THREE.Float32BufferAttribute(haloPos,3));
+  const heartHalo = new THREE.Points(haloGeo, new THREE.PointsMaterial({
+    color: 0xffcfe3, size: 0.32, transparent:true, opacity:0.7,
+    blending: THREE.AdditiveBlending, depthWrite:false
+  }));
+  heartGroup.add(heartHalo);
+  heartGroup.visible = false;
+
+  // ============== Text particles (✅修：更密 + 更柔 + 色温) ==============
+  const particleMat = new THREE.PointsMaterial({
+    size: 0.60,                 // ✅ 更小（更细腻）
+    map: glowTex,
+    transparent: true,
+    opacity: 0.72,              // ✅ 更克制（避免硬白）
+    vertexColors: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  const textGroup = new THREE.Group();
+  scene.add(textGroup);
+  let textParticles = [];
+
+  const fontLoader = new FontLoader();
+  fontLoader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+    function generateText(text, y, color) {
+      const geo = new TextGeometry(text, { font, size: 3.5, height: 0.2, curveSegments: 8 });
+      geo.center();
+
+      const ptr = geo.attributes.position.array;
+      const pts = [];
+      const cols = [];
+      const c = new THREE.Color(color);
+
+      for (let i = 0; i < ptr.length; i += 3) {
+        // ✅ 更密：只丢 18% 点，笔画不会断裂
+        if (Math.random() > 0.82) continue;
+        pts.push(ptr[i], ptr[i+1] + y, ptr[i+2]);
+        cols.push(c.r, c.g, c.b);
+      }
+
+      const buf = new THREE.BufferGeometry();
+      buf.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      buf.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+
+      const p = new THREE.Points(buf, particleMat);
+      p.userData = { velocities: new Array(pts.length/3).fill(0).map(()=>({x:0,y:0,z:0})), exploding:false };
+      textGroup.add(p);
+      textParticles.push(p);
+    }
+
+    generateText('Merry', 4, 0xffcfe3);
+    // ✅ 关键：白里带粉，视觉更高级、更不刺眼
+    generateText('Christmas', -2, 0xfff2fb);
+    textGroup.visible = false;
+  });
+
+  // ============== Fireworks (Bloom) ==============
+  const fireworks = [];
+  function launchFirework() {
+    const x = (Math.random()-0.5) * 40;
+    const y = Math.random() * 20 + 10;
+    const z = (Math.random()-0.5) * 40;
+
+    const color = new THREE.Color(0xffffff).lerp(new THREE.Color(0xffb6d6), Math.random()*0.5);
+
+    const count = 160;
+    const pos = new Float32Array(count * 3);
+    const vel = [];
+
+    for(let i=0; i<count; i++) {
+      pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 0.50 + 0.22;
+      vel.push({ x: Math.cos(angle)*speed, y: (Math.random()-0.5)*speed + 0.18, z: Math.sin(angle)*speed });
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 0.62,
+      map: glowTex,
+      color,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
     });
 
-    const snow = new THREE.Points(new THREE.BufferGeometry(), snowMat);
-    scene.add(snow);
+    const sys = new THREE.Points(geo, mat);
+    sys.layers.enable(BLOOM_LAYER);
+    scene.add(sys);
+    fireworks.push({ sys, vel, life: 1.0 });
+  }
 
-    function buildSnow() {
-        const count = 2200;
-        const pos = new Float32Array(count * 3);
-        const size = new Float32Array(count);
-        const speed = new Float32Array(count);
-        const drift = new Float32Array(count);
-        const phase = new Float32Array(count);
+  // ============== Burst (Bloom) ==============
+  const bursts = [];
+  function spawnBurst(pos, baseColor = 0xffd1e8) {
+    const count = 1200;
+    const p = new Float32Array(count * 3);
+    const v = new Float32Array(count * 3);
+    const cols = new Float32Array(count * 3);
 
-        for (let i = 0; i < count; i++) {
-            pos[i*3]   = (Math.random() - 0.5) * 140;
-            pos[i*3+1] = Math.random() * 90 + 10;
-            pos[i*3+2] = (Math.random() - 0.5) * 160;
+    const c = new THREE.Color(baseColor);
 
-            const z = Math.abs(pos[i*3+2]);
-            const depthFactor = 1.0 - Math.min(z / 160, 1.0);
+    for (let i = 0; i < count; i++) {
+      p[i*3]   = pos.x + (Math.random()-0.5) * 0.8;
+      p[i*3+1] = pos.y + (Math.random()-0.5) * 0.8;
+      p[i*3+2] = pos.z + (Math.random()-0.5) * 0.8;
 
-            size[i] = (0.8 + Math.random() * 2.0) * (0.55 + depthFactor);
-            speed[i] = 2.2 + Math.random() * 5.5;
-            drift[i] = 0.06 + Math.random() * 0.20;
-            phase[i] = Math.random() * 90.0;
-        }
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2*Math.random()-1);
+      const speed = 0.25 + Math.random() * 1.10;
 
-        snow.geometry.dispose();
-        const g = new THREE.BufferGeometry();
-        g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        g.setAttribute('aSize', new THREE.BufferAttribute(size, 1));
-        g.setAttribute('aSpeed', new THREE.BufferAttribute(speed, 1));
-        g.setAttribute('aDrift', new THREE.BufferAttribute(drift, 1));
-        g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
-        snow.geometry = g;
+      v[i*3]   = Math.sin(phi) * Math.cos(theta) * speed;
+      v[i*3+1] = Math.cos(phi) * speed + 0.33;
+      v[i*3+2] = Math.sin(phi) * Math.sin(theta) * speed;
+
+      const mix = Math.random();
+      const cc = c.clone().lerp(new THREE.Color(0xffffff), mix*0.65);
+      cols[i*3] = cc.r; cols[i*3+1] = cc.g; cols[i*3+2] = cc.b;
     }
-    buildSnow();
 
-    // =========================
-    // 💖 爱心（不 Bloom，保持质感）
-    // =========================
-    const heartGroup = new THREE.Group();
-    scene.add(heartGroup);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
 
-    const heartShape = new THREE.Shape();
-    heartShape.moveTo(0, 0);
-    heartShape.bezierCurveTo(0, 3, -3, 3, -3, 0);
-    heartShape.bezierCurveTo(-3, -3, 3, -3, 3, 0);
-    heartShape.bezierCurveTo(3, 3, 0, 3, 0, 0);
+    const mat = new THREE.PointsMaterial({
+      size: 0.55,
+      map: glowTex,
+      vertexColors: true,
+      transparent: true,
+      opacity: 1.0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
 
-    const heartGeo = new THREE.ExtrudeGeometry(heartShape, { depth:2, bevelEnabled:true, bevelSegments:3, steps:2, bevelSize:0.5, bevelThickness:0.5 });
-    heartGeo.center();
+    const sys = new THREE.Points(geo, mat);
+    sys.layers.enable(BLOOM_LAYER);
+    scene.add(sys);
+    bursts.push({ sys, vel: v, life: 1.0 });
+  }
 
-    const heartMesh = new THREE.Mesh(heartGeo, new THREE.MeshPhongMaterial({
-        color: 0xff7cbc, emissive: 0x2b0017, shininess: 180, specular: 0xffffff
-    }));
-    heartMesh.scale.set(2,2,2);
-    heartGroup.add(heartMesh);
+  // ============== Steps ==============
+  let step = 1;
+  const overlay = document.getElementById('final-overlay');
+  const label = document.getElementById('stage-label');
 
-    const haloGeo = new THREE.BufferGeometry();
-    const haloPos = [];
-    for (let i=0;i<240;i++){
-        const t = i/240*Math.PI*2;
-        const r = 8.5 + Math.random()*0.8;
-        haloPos.push(Math.cos(t)*r, (Math.random()-0.5)*2.2, Math.sin(t)*r);
-    }
-    haloGeo.setAttribute('position', new THREE.Float32BufferAttribute(haloPos,3));
-    const heartHalo = new THREE.Points(haloGeo, new THREE.PointsMaterial({
-        color: 0xffcfe3, size: 0.32, transparent:true, opacity:0.7,
-        blending: THREE.AdditiveBlending, depthWrite:false
-    }));
-    heartGroup.add(heartHalo);
+  function setStep(v) {
+    step = v;
+    treeGroup.visible = false;
     heartGroup.visible = false;
+    textGroup.visible = false;
+    overlay.style.display = 'none';
 
-    // =========================
-    // 📝 粒子文字
-    // =========================
-    const particleMat = new THREE.PointsMaterial({
-        size: 0.75,
-        map: glowTex,
-        transparent: true,
-        opacity: 0.9,
-        vertexColors: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-    });
+    vortexGroup.visible = true;
+    document.getElementById('left-text').style.opacity = (step === 1 || step === 4) ? '0.92' : '0.35';
 
-    const textGroup = new THREE.Group();
-    scene.add(textGroup);
-    let textParticles = [];
+    if(step === 1) { treeGroup.visible = true; label.innerText = "✨ The Starry Tree ✨"; }
+    else if(step === 2) { heartGroup.visible = true; label.innerText = "💖 My Heart For You 💖"; }
+    else if(step === 3) { textGroup.visible = true; label.innerText = "🎄 Best Wishes 🎄"; }
+    else if(step === 4) { treeGroup.visible = true; overlay.style.display = 'flex'; label.innerText = "💌 A Question... 💌"; }
+  }
 
-    const fontLoader = new FontLoader();
-    fontLoader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
-        function generateText(text, y, color) {
-            const geo = new TextGeometry(text, { font, size: 3.5, height: 0.2, curveSegments: 6 });
-            geo.center();
+  document.getElementById('next-btn').onclick = () => { if(step < 4) setStep(step+1); };
+  document.getElementById('prev-btn').onclick = () => { if(step > 1) setStep(step-1); };
 
-            const ptr = geo.attributes.position.array;
-            const pts = [];
-            const cols = [];
-            const c = new THREE.Color(color);
+  document.getElementById('theme-btn').onclick = () => {
+    colorIdx = (colorIdx + 1) % CONFIG.themes.length;
+    applyTheme();
+    createVolumetricTree();
+    buildVortex();
+    buildStars();
+  };
 
-            for (let i = 0; i < ptr.length; i += 3) {
-                if (Math.random() > 0.62) continue;
-                pts.push(ptr[i], ptr[i+1] + y, ptr[i+2]);
-                cols.push(c.r, c.g, c.b);
-            }
+  document.getElementById('fire-btn').onclick = launchFirework;
 
-            const buf = new THREE.BufferGeometry();
-            buf.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-            buf.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-
-            const p = new THREE.Points(buf, particleMat);
-            p.userData = { velocities: new Array(pts.length/3).fill(0).map(()=>({x:0,y:0,z:0})), exploding:false };
-            textGroup.add(p);
-            textParticles.push(p);
-        }
-
-        generateText('Merry', 4, 0xffcfe3);
-        generateText('Christmas', -2, 0xffffff);
-        textGroup.visible = false;
-    });
-
-    // =========================
-    // 🎆 烟花（放到 Bloom Layer，只有烟花 Bloom）
-    // =========================
-    const fireworks = [];
-    function launchFirework() {
-        const x = (Math.random()-0.5) * 40;
-        const y = Math.random() * 20 + 10;
-        const z = (Math.random()-0.5) * 40;
-
-        const color = new THREE.Color(0xffffff).lerp(new THREE.Color(0xffb6d6), Math.random()*0.5);
-
-        const count = 160;
-        const pos = new Float32Array(count * 3);
-        const vel = [];
-
-        for(let i=0; i<count; i++) {
-            pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 0.50 + 0.22;
-            vel.push({ x: Math.cos(angle)*speed, y: (Math.random()-0.5)*speed + 0.18, z: Math.sin(angle)*speed });
-        }
-
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const mat = new THREE.PointsMaterial({
-            size: 0.62,
-            map: glowTex,
-            color,
-            transparent: true,
-            opacity: 0.95,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
+  document.getElementById('boom-btn').onclick = () => {
+    if (step === 3 && textParticles.length > 0) {
+      textParticles.forEach(p => {
+        p.userData.exploding = true;
+        p.userData.velocities.forEach(v => {
+          v.x = (Math.random()-0.5) * 1.2;
+          v.y = (Math.random()-0.5) * 1.2;
+          v.z = (Math.random()-0.5) * 1.2;
         });
-
-        const sys = new THREE.Points(geo, mat);
-        sys.layers.enable(BLOOM_LAYER);
-        scene.add(sys);
-        fireworks.push({ sys, vel, life: 1.0 });
+        p.material.opacity = 0.85;
+      });
+      return;
     }
 
-    // =========================
-    // 💥 爆炸（放到 Bloom Layer）
-    // =========================
-    const bursts = [];
-    function spawnBurst(pos, baseColor = 0xffd1e8) {
-        const count = 1200;
-        const p = new Float32Array(count * 3);
-        const v = new Float32Array(count * 3);
-        const cols = new Float32Array(count * 3);
+    const th = CONFIG.themes[colorIdx];
+    spawnBurst(new THREE.Vector3(0, 2, 0), th.a);
+    spawnBurst(new THREE.Vector3(0, CONFIG.vortex.baseY + 10, 0), th.b);
+  };
 
-        const c = new THREE.Color(baseColor);
+  document.getElementById('yes-btn').onclick = (e) => {
+    e.stopPropagation();
+    overlay.querySelector('.question').innerHTML = "我就知道<br>你会答应的 ❤️";
+    document.getElementById('yes-btn').style.display = 'none';
 
-        for (let i = 0; i < count; i++) {
-            p[i*3]   = pos.x + (Math.random()-0.5) * 0.8;
-            p[i*3+1] = pos.y + (Math.random()-0.5) * 0.8;
-            p[i*3+2] = pos.z + (Math.random()-0.5) * 0.8;
+    let fwCount = 0;
+    const fwInterval = setInterval(() => {
+      launchFirework();
+      fwCount++;
+      if(fwCount > 10) clearInterval(fwInterval);
+    }, 260);
 
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2*Math.random()-1);
-            const speed = 0.25 + Math.random() * 1.10;
-
-            v[i*3]   = Math.sin(phi) * Math.cos(theta) * speed;
-            v[i*3+1] = Math.cos(phi) * speed + 0.33;
-            v[i*3+2] = Math.sin(phi) * Math.sin(theta) * speed;
-
-            const mix = Math.random();
-            const cc = c.clone().lerp(new THREE.Color(0xffffff), mix*0.65);
-            cols[i*3] = cc.r; cols[i*3+1] = cc.g; cols[i*3+2] = cc.b;
-        }
-
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
-        geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-
-        const mat = new THREE.PointsMaterial({
-            size: 0.55,
-            map: glowTex,
-            vertexColors: true,
-            transparent: true,
-            opacity: 1.0,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-
-        const sys = new THREE.Points(geo, mat);
-        sys.layers.enable(BLOOM_LAYER);
-        scene.add(sys);
-        bursts.push({ sys, vel: v, life: 1.0 });
-    }
-
-    // =========================
-    // 🎮 流程
-    // =========================
-    let step = 1;
-    const overlay = document.getElementById('final-overlay');
-    const label = document.getElementById('stage-label');
-
-    function setStep(v) {
-        step = v;
-        treeGroup.visible = false;
-        heartGroup.visible = false;
-        textGroup.visible = false;
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
         overlay.style.display = 'none';
+        overlay.style.opacity = '1';
+        label.innerText = "💑 Forever Together 💑";
+      }, 500);
+    }, 2500);
+  };
 
-        vortexGroup.visible = true;
-        document.getElementById('left-text').style.opacity = (step === 1 || step === 4) ? '0.92' : '0.35';
+  // ============== Animate ==============
+  const clock = new THREE.Clock();
 
-        if(step === 1) { treeGroup.visible = true; label.innerText = "✨ The Starry Tree ✨"; }
-        else if(step === 2) { heartGroup.visible = true; label.innerText = "💖 My Heart For You 💖"; }
-        else if(step === 3) { textGroup.visible = true; label.innerText = "🎄 Best Wishes 🎄"; }
-        else if(step === 4) { treeGroup.visible = true; overlay.style.display = 'flex'; label.innerText = "💌 A Question... 💌"; }
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    controls.update();
+    if (treeMat) treeMat.uniforms.uTime.value = t;
+    snowMat.uniforms.uTime.value = t;
+
+    if (treeGroup.visible) {
+      treeGroup.rotation.y = t * 0.10;
+      const breathe = 1 + Math.sin(t * 1.10) * 0.03;
+      treeGroup.scale.set(breathe, breathe, breathe);
     }
 
-    document.getElementById('next-btn').onclick = () => { if(step < 4) setStep(step+1); };
-    document.getElementById('prev-btn').onclick = () => { if(step > 1) setStep(step-1); };
+    starGroup.children.forEach(o => o.rotation.y += o.userData.rot);
 
-    document.getElementById('theme-btn').onclick = () => {
-        colorIdx = (colorIdx + 1) % CONFIG.themes.length;
-        applyTheme();
-        createVolumetricTree();
-        buildVortex();
-        buildStars();
-    };
-
-    document.getElementById('fire-btn').onclick = launchFirework;
-
-    document.getElementById('boom-btn').onclick = () => {
-        if (step === 3 && textParticles.length > 0) {
-            textParticles.forEach(p => {
-                p.userData.exploding = true;
-                p.userData.velocities.forEach(v => {
-                    v.x = (Math.random()-0.5) * 1.2;
-                    v.y = (Math.random()-0.5) * 1.2;
-                    v.z = (Math.random()-0.5) * 1.2;
-                });
-                p.material.opacity = 0.95;
-            });
-            return;
-        }
-
-        const th = CONFIG.themes[colorIdx];
-        spawnBurst(new THREE.Vector3(0, 2, 0), th.a);
-        spawnBurst(new THREE.Vector3(0, CONFIG.vortex.baseY + 10, 0), th.b);
-    };
-
-    document.getElementById('yes-btn').onclick = (e) => {
-        e.stopPropagation();
-        overlay.querySelector('.question').innerHTML = "我就知道<br>你会答应的 ❤️";
-        document.getElementById('yes-btn').style.display = 'none';
-
-        let fwCount = 0;
-        const fwInterval = setInterval(() => {
-            launchFirework();
-            fwCount++;
-            if(fwCount > 10) clearInterval(fwInterval);
-        }, 260);
-
-        setTimeout(() => {
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                overlay.style.opacity = '1';
-                label.innerText = "💑 Forever Together 💑";
-            }, 500);
-        }, 2500);
-    };
-
-    // =========================
-    // 🎥 动画
-    // =========================
-    const clock = new THREE.Clock();
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const t = clock.getElapsedTime();
-
-        controls.update();
-        if (treeMat) treeMat.uniforms.uTime.value = t;
-        snowMat.uniforms.uTime.value = t;
-
-        // 树：慢转 + 呼吸
-        if (treeGroup.visible) {
-            treeGroup.rotation.y = t * 0.10;
-            const breathe = 1 + Math.sin(t * 1.10) * 0.03;
-            treeGroup.scale.set(breathe, breathe, breathe);
-        }
-
-        // 星空：分层慢转
-        starGroup.children.forEach(o => o.rotation.y += o.userData.rot);
-
-        // 旋涡：整体旋转
-        vortexGroup.rotation.y = t * 0.14;
-        vortexGroup.children.forEach(obj => {
-            if (!obj.isPoints) return;
-            if (obj.userData?.isDisk) { obj.rotation.y = -t * 0.06; return; }
-            obj.rotation.y += (0.002 + obj.userData.band * 0.0006);
-        });
-
-        // 相机漂浮
-        camera.position.x = Math.sin(t * 0.12) * 1.1;
-        camera.position.y = 12 + Math.sin(t * 0.18) * 0.55;
-        camera.position.z = 54 + Math.cos(t * 0.12) * 0.9;
-        camera.lookAt(0, 0, 0);
-
-        // 爱心动画
-        if (heartGroup.visible) {
-            heartGroup.rotation.y = Math.sin(t) * 0.28;
-            const beat = 1 + Math.sin(t * 3) * 0.15;
-            heartGroup.children[0].scale.set(2*beat, 2*beat, 2*beat);
-            heartGroup.children[1].rotation.z -= 0.01;
-        }
-
-        // 文字爆炸
-        textParticles.forEach(p => {
-            if (!p.userData.exploding) return;
-            const pos = p.geometry.attributes.position.array;
-            const vels = p.userData.velocities;
-            for (let i = 0; i < vels.length; i++) {
-                pos[i*3]   += vels[i].x;
-                pos[i*3+1] += vels[i].y;
-                pos[i*3+2] += vels[i].z;
-                vels[i].y  -= 0.02;
-            }
-            p.geometry.attributes.position.needsUpdate = true;
-            p.material.opacity = Math.max(0, p.material.opacity - 0.012);
-        });
-
-        // 烟花物理
-        for (let i = fireworks.length - 1; i >= 0; i--) {
-            const fw = fireworks[i];
-            fw.life -= 0.016;
-            fw.sys.material.opacity = fw.life;
-
-            const pos = fw.sys.geometry.attributes.position.array;
-            for (let j = 0; j < fw.vel.length; j++) {
-                pos[j*3]   += fw.vel[j].x;
-                pos[j*3+1] += fw.vel[j].y;
-                pos[j*3+2] += fw.vel[j].z;
-                fw.vel[j].y -= 0.0048;
-            }
-            fw.sys.geometry.attributes.position.needsUpdate = true;
-
-            if (fw.life <= 0) {
-                scene.remove(fw.sys);
-                fw.sys.geometry.dispose();
-                fw.sys.material.dispose();
-                fireworks.splice(i, 1);
-            }
-        }
-
-        // 爆炸物理
-        for (let i = bursts.length - 1; i >= 0; i--) {
-            const b = bursts[i];
-            b.life -= 0.02;
-            b.sys.material.opacity = Math.max(0, b.life);
-
-            const pos = b.sys.geometry.attributes.position.array;
-            const vel = b.vel;
-
-            for (let j = 0; j < vel.length/3; j++) {
-                pos[j*3]   += vel[j*3];
-                pos[j*3+1] += vel[j*3+1];
-                pos[j*3+2] += vel[j*3+2];
-
-                vel[j*3+1] -= 0.012;
-                vel[j*3]   *= 0.985;
-                vel[j*3+1] *= 0.985;
-                vel[j*3+2] *= 0.985;
-            }
-            b.sys.geometry.attributes.position.needsUpdate = true;
-
-            if (b.life <= 0) {
-                scene.remove(b.sys);
-                b.sys.geometry.dispose();
-                b.sys.material.dispose();
-                bursts.splice(i, 1);
-            }
-        }
-
-        // =========================
-        // 渲染：先 bloom(只对 BloomLayer)，再合成
-        // =========================
-        scene.traverse(darkenNonBloomed);
-        bloomComposer.render();
-        scene.traverse(restoreMaterial);
-
-        finalComposer.render();
-    }
-
-    setStep(1);
-    animate();
-
-    // resize
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        bloomComposer.setSize(window.innerWidth, window.innerHeight);
-        finalComposer.setSize(window.innerWidth, window.innerHeight);
-        bloomPass.setSize(window.innerWidth, window.innerHeight);
+    vortexGroup.rotation.y = t * 0.14;
+    vortexGroup.children.forEach(obj => {
+      if (!obj.isPoints) return;
+      if (obj.userData?.isDisk) { obj.rotation.y = -t * 0.06; return; }
+      obj.rotation.y += (0.002 + obj.userData.band * 0.0006);
     });
+
+    if (stageSprite) {
+      stageSprite.material.opacity = 0.14 + 0.06 * (Math.sin(t * 1.2) * 0.5 + 0.5);
+    }
+
+    camera.position.x = Math.sin(t * 0.12) * 1.1;
+    camera.position.y = 12 + Math.sin(t * 0.18) * 0.55;
+    camera.position.z = 54 + Math.cos(t * 0.12) * 0.9;
+    camera.lookAt(0, 0, 0);
+
+    if (heartGroup.visible) {
+      heartGroup.rotation.y = Math.sin(t) * 0.28;
+      const beat = 1 + Math.sin(t * 3) * 0.15;
+      heartGroup.children[0].scale.set(2*beat, 2*beat, 2*beat);
+      heartGroup.children[1].rotation.z -= 0.01;
+    }
+
+    textParticles.forEach(p => {
+      if (!p.userData.exploding) return;
+      const pos = p.geometry.attributes.position.array;
+      const vels = p.userData.velocities;
+      for (let i = 0; i < vels.length; i++) {
+        pos[i*3]   += vels[i].x;
+        pos[i*3+1] += vels[i].y;
+        pos[i*3+2] += vels[i].z;
+        vels[i].y  -= 0.02;
+      }
+      p.geometry.attributes.position.needsUpdate = true;
+      p.material.opacity = Math.max(0, p.material.opacity - 0.012);
+    });
+
+    for (let i = fireworks.length - 1; i >= 0; i--) {
+      const fw = fireworks[i];
+      fw.life -= 0.016;
+      fw.sys.material.opacity = fw.life;
+      const pos = fw.sys.geometry.attributes.position.array;
+      for (let j = 0; j < fw.vel.length; j++) {
+        pos[j*3]   += fw.vel[j].x;
+        pos[j*3+1] += fw.vel[j].y;
+        pos[j*3+2] += fw.vel[j].z;
+        fw.vel[j].y -= 0.0048;
+      }
+      fw.sys.geometry.attributes.position.needsUpdate = true;
+      if (fw.life <= 0) {
+        scene.remove(fw.sys);
+        fw.sys.geometry.dispose();
+        fw.sys.material.dispose();
+        fireworks.splice(i, 1);
+      }
+    }
+
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const b = bursts[i];
+      b.life -= 0.02;
+      b.sys.material.opacity = Math.max(0, b.life);
+      const pos = b.sys.geometry.attributes.position.array;
+      const vel = b.vel;
+      for (let j = 0; j < vel.length/3; j++) {
+        pos[j*3]   += vel[j*3];
+        pos[j*3+1] += vel[j*3+1];
+        pos[j*3+2] += vel[j*3+2];
+        vel[j*3+1] -= 0.012;
+        vel[j*3]   *= 0.985;
+        vel[j*3+1] *= 0.985;
+        vel[j*3+2] *= 0.985;
+      }
+      b.sys.geometry.attributes.position.needsUpdate = true;
+      if (b.life <= 0) {
+        scene.remove(b.sys);
+        b.sys.geometry.dispose();
+        b.sys.material.dispose();
+        bursts.splice(i, 1);
+      }
+    }
+
+    scene.traverse(darkenNonBloomed);
+    bloomComposer.render();
+    scene.traverse(restoreMaterial);
+
+    finalComposer.render();
+  }
+
+  setStep(1);
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    bloomComposer.setSize(window.innerWidth, window.innerHeight);
+    finalComposer.setSize(window.innerWidth, window.innerHeight);
+    bloomPass.setSize(window.innerWidth, window.innerHeight);
+  });
 </script>
 </body>
 </html>
